@@ -89,7 +89,7 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 
 /* 背景光斑 + 网格 */
 .bg-deco{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
-.bg-deco .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.9;transition:background .5s var(--ease)}
+.bg-deco .orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.85;transition:background .5s var(--ease)}
 .orb.o1{width:44vmax;height:44vmax;top:-14vmax;left:-10vmax;background:var(--orb-1)}
 .orb.o2{width:40vmax;height:40vmax;top:6vmax;right:-14vmax;background:var(--orb-2)}
 .orb.o3{width:34vmax;height:34vmax;bottom:-12vmax;left:30%;background:var(--orb-3)}
@@ -117,9 +117,9 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
   transition:background .5s var(--ease),border-color .5s var(--ease);
 }
 .nav-in{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.nav-brand{display:flex;align-items:center;gap:10px;min-width:0}
-.nav-brand img{width:30px;height:30px;border-radius:10px}
-.nav-brand b{font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand{display:flex;align-items:center;gap:10px;min-width:0;flex-shrink:1;overflow:hidden}
+.nav-brand img{width:30px;height:30px;border-radius:10px;flex:none}
+.nav-brand b{font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .nav-brand b em{font-style:normal;color:var(--text-3);font-weight:500}
 .nav-links{display:flex;align-items:center;gap:2px;overflow:hidden}
 .nav-links a{
@@ -130,6 +130,13 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .nav-links a:hover{color:var(--text);background:color-mix(in srgb,var(--text) 7%,transparent)}
 .nav-links a:active{opacity:.6}
 .nav-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+/* 窄屏（与 JS 隐藏导航链接的断点一致）：压缩品牌副标题，防止按钮遮住模块名称 */
+@media (max-width:700px){
+  .nav-in{gap:10px}
+  .nav-brand{gap:8px}
+  .nav-brand b em{display:none}
+  .nav-actions{gap:8px}
+}
 
 /* 主题按钮（圆形，直径 40px，与下载按钮高度相当） */
 .btn.theme-btn{width:40px;height:40px;min-width:0;padding:0;border-radius:50%}
@@ -151,7 +158,6 @@ html:not([data-theme="dark"]) .theme-btn .tb-moon{display:none}
   -webkit-backdrop-filter:blur(0px) saturate(100%);
   transition:opacity .3s cubic-bezier(.4,0,.2,1),backdrop-filter .3s cubic-bezier(.4,0,.2,1);
   -webkit-transition:opacity .3s cubic-bezier(.4,0,.2,1),-webkit-backdrop-filter .3s cubic-bezier(.4,0,.2,1);
-  will-change:opacity,backdrop-filter;
 }
 #langVeil.on{
   opacity:1;
@@ -513,10 +519,10 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
 .foot-links a:hover{color:var(--text)}
 .foot-copy{font-size:12.5px;color:var(--text-3)}
 
-/* ============ 入场动画 ============ */
-.rv{opacity:0;transform:translateY(26px);filter:blur(10px)}
+/* ============ 入场动画（仅位移+淡入，不用 blur：滚动时避免大面积模糊重绘导致闪屏） ============ */
+.rv{opacity:0;transform:translateY(26px)}
 .rv.in{animation:rvIn .9s var(--ease-out) both}
-@keyframes rvIn{to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@keyframes rvIn{to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
