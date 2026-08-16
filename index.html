@@ -7,7 +7,7 @@
 <meta name="description" content="LibPool（库池）：233 个扩展库一键挂载到 /system，Magisk / KernelSU / APatch 通用，Rust 原生低功耗，iOS 18 通透毛玻璃 WebUI。">
 <link rel="icon" type="image/png" href="libpool-logo.png">
 <script>
-(function(){try{var t=localStorage.getItem('lp-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+(function(){try{var t=localStorage.getItem('lp-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('lp-lang');if(l)document.documentElement.setAttribute('data-lang',l);}catch(e){}})();
 </script>
 <style>
 /* ============ 令牌 ============ */
@@ -16,9 +16,9 @@
   --ease-out:cubic-bezier(.16,1,.3,1);
   --ease-spring:cubic-bezier(.34,1.4,.5,1);
   --corner-sq:squircle;
-  --radius:35px;
-  --radius-lg:44px;
-  --radius-sm:22px;
+  --radius:38px;
+  --radius-lg:38px;
+  --radius-sm:38px;
   --nav-h:64px;
   --c:clamp(28px,7.5vw,44px);
 }
@@ -131,12 +131,16 @@ button{font-family:inherit;border:none;background:none;cursor:pointer;color:inhe
 .nav-links a:active{opacity:.6}
 .nav-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
 
-/* 主题按钮（点按式，与下载按钮同尺寸） */
-.theme-btn{min-width:64px}
+/* 主题按钮（圆形，直径 40px，与下载按钮高度相当） */
+.btn.theme-btn{width:40px;height:40px;min-width:0;padding:0;border-radius:50%}
 .theme-btn .tb-sun,.theme-btn .tb-moon{display:grid;place-items:center;width:17px;height:17px;flex:none}
 .theme-btn .tb-sun svg,.theme-btn .tb-moon svg{width:17px;height:17px}
 html[data-theme="dark"] .theme-btn .tb-sun{display:none}
 html:not([data-theme="dark"]) .theme-btn .tb-moon{display:none}
+
+/* 语言按钮（圆形，外观与主题按钮一致） */
+.btn.lang-btn{width:40px;height:40px;min-width:0;padding:0;border-radius:50%}
+.lang-btn svg{width:18px;height:18px}
 
 /* 下载按钮 */
 .btn{
@@ -274,38 +278,164 @@ section{padding:clamp(56px,9vh,96px) 0;position:relative}
   background:color-mix(in srgb,var(--accent) 11%,transparent);color:var(--accent)}
 .chip svg{width:14px;height:14px}
 
-/* ============ WebUI 展示 ============ */
+/* ============ WebUI 展示（KsuWebUI 还原 · 可交互演示） ============ */
 .webui{
+  --r-card:38px;               /* 演示内卡片圆角（设置页滑杆可调 16-48px） */
+  --green:#34c759;--red:#ff3b30;
   position:relative;max-width:900px;margin:0 auto;border-radius:var(--radius-lg);corner-shape:var(--corner-sq);
   border:1px solid var(--stroke);box-shadow:var(--shadow);overflow:hidden;
   background:var(--bg-deep);
 }
-.webui-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--stroke);background:var(--glass)}
+html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
+.webui-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--stroke);background:var(--glass)}
 .webui-bar .wdot{width:11px;height:11px;border-radius:50%}
 .webui-bar .wdot:nth-child(1){background:#ff5f57}.webui-bar .wdot:nth-child(2){background:#febc2e}.webui-bar .wdot:nth-child(3){background:#28c840}
-.webui-bar .wtabs{margin-left:auto;display:flex;gap:6px}
-.webui-bar .wtabs span{padding:5px 12px;border-radius:980px;font-size:12px;color:var(--text-2);background:var(--card-bg);border:1px solid var(--stroke)}
-.webui-bar .wtabs span.on{background:var(--accent);color:#fff;border-color:transparent}
-.webui-body{position:relative;padding:22px;background:
-  radial-gradient(100% 120% at 80% 0%,var(--orb-2),transparent 55%),
-  radial-gradient(90% 110% at 0% 100%,var(--orb-1),transparent 55%),
-  var(--bg)}
-.webui-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-@media (min-width:640px){.webui-grid{grid-template-columns:repeat(3,1fr)}}
-.w-card{padding:16px;border-radius:18px;corner-shape:var(--corner-sq);background:var(--card-bg);border:1px solid var(--stroke);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.w-card .w-ic{width:34px;height:34px;border-radius:10px;corner-shape:var(--corner-sq);display:grid;place-items:center;margin-bottom:12px;color:#fff}
-.w-card b{font-size:13.5px;font-weight:600;display:block;margin-bottom:2px}
-.w-card span{font-size:11.5px;color:var(--text-3)}
-.w-card .bar{height:5px;border-radius:3px;background:color-mix(in srgb,var(--text) 10%,transparent);margin-top:12px;overflow:hidden}
-.w-card .bar i{display:block;height:100%;border-radius:3px;background:var(--accent);width:72%}
-.w-ic.c1{background:linear-gradient(135deg,#ff9f0a,#ff6b2c)}
-.w-ic.c2{background:linear-gradient(135deg,#0a84ff,#3a9bff)}
-.w-ic.c3{background:linear-gradient(135deg,#34c759,#22a447)}
-.w-ic.c4{background:linear-gradient(135deg,#bf5af2,#a03ce6)}
-.w-ic.c5{background:linear-gradient(135deg,#ff375f,#e62049)}
-.w-ic.c6{background:linear-gradient(135deg,#64d2ff,#0a84ff)}
-.w-shadow{position:absolute;inset:auto 8% -18px;height:34px;background:radial-gradient(60% 100% at 50% 0%,var(--orb-1),transparent 70%);filter:blur(14px)}
+.webui-bar .wtitle{margin-left:10px;font-size:12.5px;font-weight:600;color:var(--text-2)}
+.webui-bar .wtag{margin-left:auto;font-size:11px;font-weight:500;color:var(--text-3);border:1px solid var(--stroke);border-radius:980px;padding:3px 9px;background:var(--card-bg)}
+
+/* 演示应用外壳：居中手机栏 + 背景光斑 */
+.wui-app{position:relative;max-width:460px;margin:0 auto;padding:22px 16px 30px;
+  --walpha:100%;--wblur:24px;--wshape:squircle;
+  background:
+    radial-gradient(100% 120% at 85% 0%,var(--orb-2),transparent 55%),
+    radial-gradient(90% 110% at 0% 100%,var(--orb-1),transparent 55%),
+    var(--bg);}
+
+/* 迷你 Hero */
+.wui-hero{display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;padding:4px 0 18px}
+.wui-hero img{width:54px;height:54px;border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.16)}
+.wui-hero b{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.wui-hero .wtagline{font-size:12.5px;color:var(--text-3)}
+.wui-status{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:980px;font-size:12px;font-weight:500;color:var(--text-2);
+  background:var(--glass-strong);border:1px solid var(--stroke);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.wui-status .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2.4s var(--ease) infinite}
+
+/* 标签栏（滑动指示器） */
+.wui-tabs{position:relative;display:flex;padding:4px;border-radius:999px;margin-bottom:18px;
+  background:color-mix(in srgb,var(--text) 6%,transparent);border:1px solid var(--stroke)}
+.wui-tab{flex:1;position:relative;z-index:1;padding:9px 0;border:none;background:transparent;color:var(--text-2);font-size:13.5px;font-weight:500;border-radius:999px;cursor:pointer;transition:color .3s var(--ease);min-height:40px;overflow:hidden}
+.wui-tab.on{color:var(--text)}
+.wui-ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 4);border-radius:999px;
+  background:var(--glass-strong);border:1px solid var(--stroke);box-shadow:0 2px 8px rgba(0,0,0,.08);
+  transition:transform .45s var(--ease-out)}
+.wui-tabs[data-active="store"] .wui-ind{transform:translateX(100%)}
+.wui-tabs[data-active="hide"] .wui-ind{transform:translateX(200%)}
+.wui-tabs[data-active="settings"] .wui-ind{transform:translateX(300%)}
+
+/* 面板 */
+.wui-panel{display:none;animation:panelIn .4s var(--ease) backwards}
+.wui-panel.on{display:block}
+@keyframes panelIn{from{transform:translateY(8px)}to{transform:translateY(0)}}
+
+/* 统计 */
+.wui-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.wui-stat .sc{padding:15px 8px;text-align:center;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+  border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow)}
+.wui-stat .sc b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--accent)}
+.wui-stat .sc span{font-size:11.5px;color:var(--text-2)}
+
+/* 章节标题 + 文字按钮 */
+.wui-st{display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px}
+.wui-st h3{font-size:15px;font-weight:600}
+.wui-link{border:none;background:transparent;color:var(--accent);font-size:13px;font-weight:500;padding:6px 10px;border-radius:999px;min-height:40px;cursor:pointer;overflow:hidden}
+.wui-link:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+
+/* 列表行（已挂载库 / 深度隐藏应用共用） */
+.wui-rows{display:flex;flex-direction:column;gap:10px}
+.wui-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-card);corner-shape:var(--wshape);
+  background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);border:1px solid var(--stroke);
+  backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);
+  transition:transform .16s var(--ease-out)}
+.wui-row:active{transform:scale(.98)}
+.wui-row .ri{flex:none;width:38px;height:38px;border-radius:12px;corner-shape:var(--wshape);display:grid;place-items:center;color:#fff}
+.wui-row .ri svg{width:18px;height:18px}
+.wui-avatar{flex:none;width:38px;height:38px;border-radius:12px;corner-shape:var(--wshape);display:grid;place-items:center;color:#fff;font-size:15px;font-weight:600}
+.wui-row .rbody{flex:1;min-width:0}
+.wui-row .rname{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.wui-row .rver{font-size:11.5px;color:var(--text-3);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace}
+.wui-tag{font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green)}
+
+/* 开关 */
+.wui-sw{position:relative;flex:0 0 48px;width:48px;height:29px;border-radius:999px;background:color-mix(in srgb,var(--text) 20%,transparent);border:none;cursor:pointer;transition:background .3s var(--ease)}
+.wui-sw::after{content:"";position:absolute;top:2px;left:2px;width:25px;height:25px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.wui-sw.on{background:var(--green)}
+.wui-sw.on::after{transform:translateX(19px)}
+
+/* 搜索 + 分类 */
+.wui-search{position:relative;margin-bottom:12px}
+.wui-search svg{position:absolute;left:12px;top:50%;width:16px;height:16px;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
+.wui-search input{width:100%;padding:10px 14px 10px 36px;border-radius:var(--r-card);corner-shape:var(--wshape);
+  background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);border:1px solid var(--stroke);color:var(--text);font-size:13.5px;font-family:inherit;outline:none;backdrop-filter:blur(var(--wblur));-webkit-backdrop-filter:blur(var(--wblur))}
+.wui-search input:focus{border-color:var(--accent)}
+.wui-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.wui-chip{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;color:var(--text-2);background:color-mix(in srgb,var(--text) 6%,transparent);border:1px solid var(--stroke);cursor:pointer;min-height:36px;transition:background .25s var(--ease),color .25s var(--ease)}
+.wui-chip:active{transform:scale(.95)}
+.wui-chip.on{background:var(--accent);color:#fff;border-color:transparent}
+
+/* 扩展库卡片 */
+.wui-store{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.wui-scard{padding:12px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+  border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);
+  transition:transform .16s var(--ease-out)}
+.wui-scard:active{transform:scale(.97)}
+.wui-scard .ri{width:36px;height:36px;border-radius:12px;corner-shape:var(--wshape);display:grid;place-items:center;color:#fff;margin-bottom:10px}
+.wui-scard .ri svg{width:17px;height:17px}
+.wui-scard b{display:block;font-size:13.5px;font-weight:600}
+.wui-scard .sver{font-size:11px;color:var(--text-3);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace}
+.wui-scard .sdesc{font-size:11.5px;color:var(--text-2);margin:4px 0 10px;line-height:1.5;min-height:2.6em}
+.wui-dl{width:100%;padding:7px 0;border-radius:999px;font-size:12px;font-weight:600;border:none;cursor:pointer;background:var(--accent);color:#fff;transition:transform .16s var(--ease-out),background .25s var(--ease);overflow:hidden}
+.wui-dl:active{transform:scale(.96)}
+.wui-dl.done{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+
+/* 设置：玻璃卡片 + 滑杆 + 分段 + 镜像 */
+.wui-gcard{padding:16px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+  border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);margin-bottom:12px}
+.wui-srow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.wui-sname{font-size:14px;font-weight:600}
+.wui-sdesc{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.wui-sval{font-size:12.5px;font-weight:600;color:var(--text-2);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;min-width:44px;text-align:right}
+.wui-seg{display:flex;padding:3px;border-radius:999px;background:color-mix(in srgb,var(--text) 6%,transparent);border:1px solid var(--stroke)}
+.wui-seg button{border:none;background:transparent;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;min-height:38px;transition:background .25s var(--ease),color .25s var(--ease)}
+.wui-seg button.on{background:var(--glass-strong);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.wui-slider{-webkit-appearance:none;appearance:none;width:100%;height:40px;background:transparent;cursor:pointer;margin-top:4px}
+.wui-slider::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:color-mix(in srgb,var(--text) 12%,transparent)}
+.wui-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;margin-top:-9px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.28);transition:transform .16s var(--ease-out)}
+.wui-slider:active::-webkit-slider-thumb{transform:scale(1.15)}
+.wui-mirror{display:flex;flex-direction:column;gap:8px}
+.wui-mirror button{display:flex;align-items:center;gap:10px;width:100%;padding:11px 13px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+  border:1px solid var(--stroke);color:var(--text);font-size:13px;text-align:left;cursor:pointer;overflow:hidden;transition:border-color .25s var(--ease),box-shadow .25s var(--ease),transform .16s var(--ease-out)}
+.wui-mirror button:active{transform:scale(.98)}
+.wui-mirror button.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 4px 16px color-mix(in srgb,var(--accent) 40%,transparent)}
+.wui-mirror .mradio{flex:0 0 18px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--text-3);display:grid;place-items:center;transition:border-color .25s var(--ease),background .25s var(--ease)}
+.wui-mirror button.on .mradio{border-color:var(--accent);background:var(--accent)}
+.wui-mirror button.on .mradio::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
+.wui-mtext{display:flex;flex-direction:column;min-width:0}
+.wui-mname{font-size:13px;font-weight:600}
+.wui-mhost{font-size:11px;color:var(--text-3);font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wui-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+.wui-btns button{padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;min-height:38px;transition:transform .16s var(--ease-out),background .25s var(--ease);overflow:hidden}
+.wui-btns .wp{background:var(--accent);color:#fff;border:none}
+.wui-btns .wg{background:var(--glass-strong);color:var(--text);border:1px solid var(--stroke)}
+.wui-btns button:active{transform:scale(.96)}
+.wui-btns .wr{background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--red);border:1px solid color-mix(in srgb,var(--red) 28%,transparent)}
+.wui-about .arow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:12.5px;color:var(--text-2)}
+.wui-about .arow:first-child{padding-top:0}
+.wui-about .arow span:first-child{color:var(--text-3)}
+.wui-about .arow .mono{font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace}
+.wui-danger{width:100%;margin-top:4px;padding:11px 0;border-radius:var(--r-card);corner-shape:var(--wshape);font-size:13px;font-weight:600;cursor:pointer;overflow:hidden;background:color-mix(in srgb,var(--red) 12%,transparent);color:var(--red);border:1px solid color-mix(in srgb,var(--red) 30%,transparent);transition:transform .16s var(--ease-out),background .25s var(--ease)}
+.wui-danger:active{transform:scale(.97)}
+.wui-hint{padding:18px 16px;border-radius:var(--r-card);corner-shape:var(--wshape);text-align:center;background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);border:1px dashed var(--stroke);color:var(--text-2);font-size:13px}
+.wui-hint b{display:block;font-size:14px;color:var(--text);margin-bottom:4px}
+.wui-toast{position:absolute;left:50%;bottom:16px;transform:translate(-50%,14px);padding:9px 16px;border-radius:999px;font-size:12.5px;font-weight:500;background:var(--glass-strong);color:var(--text);border:1px solid var(--stroke);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease);z-index:6;white-space:nowrap}
+.wui-toast.show{opacity:1;transform:translate(-50%,0)}
+.wui-shadow{position:absolute;inset:auto 8% -18px;height:34px;background:radial-gradient(60% 100% at 50% 0%,var(--orb-1),transparent 70%);filter:blur(14px);pointer-events:none}
+.wui-ic.c1{background:linear-gradient(135deg,#ff9f0a,#ff6b2c)}
+.wui-ic.c2{background:linear-gradient(135deg,#0a84ff,#3a9bff)}
+.wui-ic.c3{background:linear-gradient(135deg,#34c759,#22a447)}
+.wui-ic.c4{background:linear-gradient(135deg,#bf5af2,#a03ce6)}
+.wui-ic.c5{background:linear-gradient(135deg,#ff375f,#e62049)}
+.wui-ic.c6{background:linear-gradient(135deg,#64d2ff,#0a84ff)}
+.wui-ic.gray{background:linear-gradient(135deg,#8e8e93,#636366)}
 
 /* ============ 安装步骤 ============ */
 .steps{display:grid;grid-template-columns:1fr;gap:14px;max-width:720px;margin:0 auto}
@@ -338,7 +468,7 @@ section{padding:clamp(56px,9vh,96px) 0;position:relative}
 
 /* ============ FAQ ============ */
 .faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
-.faq-item{border-radius:18px;corner-shape:var(--corner-sq);background:var(--card-bg);border:1px solid var(--stroke);
+.faq-item{border-radius:var(--radius);corner-shape:var(--corner-sq);background:var(--card-bg);border:1px solid var(--stroke);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;transition:border-color .3s var(--ease)}
 .faq-item.open{border-color:color-mix(in srgb,var(--accent) 30%,var(--stroke))}
 .faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;min-height:56px;text-align:left;
@@ -381,22 +511,25 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap nav-in">
     <a class="nav-brand" href="#top">
       <img src="libpool-logo.png" alt="LibPool 图标">
-      <b>LibPool <em>库池</em></b>
+      <b>LibPool <em data-i18n="brand_sub">库池</em></b>
     </a>
     <div class="nav-links" id="navLinks">
-      <a href="#features">特性</a>
-      <a href="#compat">兼容</a>
-      <a href="#rust">Rust</a>
-      <a href="#install">安装</a>
-      <a href="#download">下载</a>
-      <a href="#faq">FAQ</a>
+      <a href="#features" data-i18n="nav_features">特性</a>
+      <a href="#compat" data-i18n="nav_compat">兼容</a>
+      <a href="#rust" data-i18n="nav_rust">Rust</a>
+      <a href="#install" data-i18n="nav_install">安装</a>
+      <a href="#download" data-i18n="nav_download">下载</a>
+      <a href="#faq" data-i18n="nav_faq">FAQ</a>
     </div>
     <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm lang-btn" id="langSw" aria-label="切换语言 / Switch language">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+      </button>
       <button class="btn btn-ghost btn-sm theme-btn" id="themeSw" aria-pressed="false" aria-label="切换亮暗主题">
         <span class="tb-sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4 19 19M19 5l-1.6 1.6M6.6 17.4 5 19"/></svg></span>
         <span class="tb-moon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></span>
       </button>
-      <a class="btn btn-primary btn-sm" href="#download">下载</a>
+      <a class="btn btn-primary btn-sm" href="#download" data-i18n="nav_dl">下载</a>
     </div>
   </div>
 </nav>
@@ -404,23 +537,23 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
 <!-- Hero -->
 <header class="hero" id="top">
   <div class="wrap">
-    <span class="hero-badge rv"><span class="dot"></span>Magisk · KernelSU · APatch 通用</span>
-    <h1 class="rv">补齐 Android<br>缺失的<span class="hl">命令行</span></h1>
-    <p class="sub rv">LibPool（库池）——把 233 个常用扩展库与 18 个核心库，一键挂载到 <b>/system/bin</b>。自动跟随最新版、即时生效免重启、绝不覆盖系统原生文件。</p>
+    <span class="hero-badge rv"><span class="dot"></span><span data-i18n="hero_badge">Magisk · KernelSU · APatch 通用</span></span>
+    <h1 class="rv" data-i18n-html="hero_h1">补齐 Android<br>缺失的<span class="hl">命令行</span></h1>
+    <p class="sub rv" data-i18n-html="hero_sub">LibPool（库池）——把 233 个常用扩展库与 18 个核心库，一键挂载到 <b>/system/bin</b>。自动跟随最新版、即时生效免重启、绝不覆盖系统原生文件。</p>
     <div class="hero-cta rv">
-      <a class="btn btn-primary" href="#download" id="dlTop">免费下载</a>
+      <a class="btn btn-primary" href="#download" id="dlTop" data-i18n="cta_dl">免费下载</a>
       <a class="btn btn-ghost" href="https://github.com/MineACEx/libpool" target="_blank" rel="noopener">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.15c0 .3.21.66.8.55A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
-        查看 GitHub
+        <span data-i18n="cta_gh">查看 GitHub</span>
       </a>
     </div>
     <div class="hero-tags rv">
-      <span class="tag">233 扩展库</span>
-      <span class="tag">18 核心库</span>
-      <span class="tag">Rust 原生 · 零常驻</span>
-      <span class="tag">32 位兼容</span>
-      <span class="tag">iOS 18 毛玻璃 WebUI</span>
-      <span class="tag">云更新</span>
+      <span class="tag" data-i18n="tag1">233 扩展库</span>
+      <span class="tag" data-i18n="tag2">18 核心库</span>
+      <span class="tag" data-i18n="tag3">Rust 原生 · 零常驻</span>
+      <span class="tag" data-i18n="tag4">32 位兼容</span>
+      <span class="tag" data-i18n="tag5">iOS 18 毛玻璃 WebUI</span>
+      <span class="tag" data-i18n="tag6">云更新</span>
     </div>
   </div>
 </header>
@@ -430,64 +563,64 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap">
     <div class="sec-head rv">
       <span class="sec-eyebrow">Features</span>
-      <h2>要用的库，装了就有</h2>
-      <p>标准 magic mount 挂载到 /system，无需写系统分区，删除也不影响原生文件。</p>
+      <h2 data-i18n="fe_title">要用的库，装了就有</h2>
+      <p data-i18n="fe_sub">标准 magic mount 挂载到 /system，无需写系统分区，删除也不影响原生文件。</p>
     </div>
     <div class="bento">
       <div class="cell rv" data-d="0">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
         <div class="big">233</div>
-        <h3>个扩展库</h3>
-        <p>adb、fastboot、curl、git、htop、strace、gdb、tmux、ffmpeg、nodejs、python……10 大分类，常用的都在这。</p>
+        <h3 data-i18n="fe0_h">个扩展库</h3>
+        <p data-i18n="fe0_p">adb、fastboot、curl、git、htop、strace、gdb、tmux、ffmpeg、nodejs、python……10 大分类，常用的都在这。</p>
       </div>
       <div class="cell rv" data-d="1">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
         <div class="big">18</div>
-        <h3>个核心库自备</h3>
-        <p>curl / git / tar / unzip / awk 等基础库，开机自动就位，开箱即用。</p>
+        <h3 data-i18n="fe1_h">个核心库自备</h3>
+        <p data-i18n="fe1_p">curl / git / tar / unzip / awk 等基础库，开机自动就位，开箱即用。</p>
       </div>
       <div class="cell rv" data-d="2">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 3v6h-6"/></svg></div>
-        <h3>自动跟随最新版</h3>
-        <p>库从 Termux 官方 / 镜像仓库解析最新版本安装，无需手动更新。</p>
+        <h3 data-i18n="fe2_h">自动跟随最新版</h3>
+        <p data-i18n="fe2_p">库从 Termux 官方 / 镜像仓库解析最新版本安装，无需手动更新。</p>
       </div>
       <div class="cell rv" data-d="3">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></div>
-        <h3>挂载即时生效</h3>
-        <p>mount / unmount 走 overlayfs 热挂载，装完立刻可用，无需重启。</p>
+        <h3 data-i18n="fe3_h">挂载即时生效</h3>
+        <p data-i18n="fe3_p">mount / unmount 走 overlayfs 热挂载，装完立刻可用，无需重启。</p>
       </div>
       <div class="cell rv" data-d="4">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 12l10 9 10-9-10-9Z"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <h3>绝不覆盖系统文件</h3>
-        <p>挂载前先检查 /system 同名 bin / lib，已存在则跳过，系统原生文件零风险。</p>
+        <h3 data-i18n="fe4_h">绝不覆盖系统文件</h3>
+        <p data-i18n="fe4_p">挂载前先检查 /system 同名 bin / lib，已存在则跳过，系统原生文件零风险。</p>
       </div>
       <div class="cell rv" data-d="5">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-        <h3>深度隐藏 root</h3>
-        <p>把银行 / MOMO / 淘宝等检测 root 的应用加进 KernelSU denylist，运行时彻底隐藏 su 痕迹，开关即生效。</p>
+        <h3 data-i18n="fe5_h">深度隐藏 root</h3>
+        <p data-i18n="fe5_p">把银行 / MOMO / 淘宝等检测 root 的应用加进 KernelSU denylist，运行时彻底隐藏 su 痕迹，开关即生效。</p>
       </div>
       <div class="cell rv" data-d="6">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></div>
-        <h3>低功耗 · 零常驻</h3>
-        <p>管理工具为 Rust 静态二进制，仅安装 / 挂载时运行后退出，空闲占用趋近 0。</p>
+        <h3 data-i18n="fe6_h">低功耗 · 零常驻</h3>
+        <p data-i18n="fe6_p">管理工具为 Rust 静态二进制，仅安装 / 挂载时运行后退出，空闲占用趋近 0。</p>
       </div>
       <div class="cell rv" data-d="7">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H4z"/><path d="M4 16l5-6 4 4 3-3 4 5"/><path d="M9 8h.01M17 8h.01M13 8h.01"/></svg></div>
-        <h3>32 位也兼容</h3>
-        <p>armv7 设备自动使用 32 位原生二进制，其它架构回退 shell 脚本。</p>
+        <h3 data-i18n="fe7_h">32 位也兼容</h3>
+        <p data-i18n="fe7_p">armv7 设备自动使用 32 位原生二进制，其它架构回退 shell 脚本。</p>
       </div>
       <div class="cell rv" data-d="8">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 3v6h-6"/></svg></div>
-        <h3>云更新</h3>
-        <p>对比本地与云端版本号，发现新版自动弹窗，下载链接一键跳转。</p>
+        <h3 data-i18n="fe8_h">云更新</h3>
+        <p data-i18n="fe8_p">对比本地与云端版本号，发现新版自动弹窗，下载链接一键跳转。</p>
       </div>
       <div class="cell tall rv" data-d="9">
         <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M3 9h18M8 14h4"/></svg></div>
-        <h3>通透毛玻璃 WebUI</h3>
-        <p>内置 KsuWebUI：iOS 18 通透毛玻璃、G2 连续圆角、亮暗主题、自定义背景与壁纸模糊度。已挂载 / 扩展库 / 深度隐藏 / 设置，一站式管理。统一日志集中在 <b>log/</b>，问题好追溯。</p>
+        <h3 data-i18n="fe9_h">通透毛玻璃 WebUI</h3>
+        <p data-i18n="fe9_p">内置 KsuWebUI：iOS 18 通透毛玻璃、G2 连续圆角、亮暗主题、自定义背景与壁纸模糊度。已挂载 / 扩展库 / 深度隐藏 / 设置，一站式管理。统一日志集中在 <b>log/</b>，问题好追溯。</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
-          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>触摸优先动效</span>
-          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>手机 · 平板适配</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span data-i18n="fe9_c1">触摸优先动效</span></span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span data-i18n="fe9_c2">手机 · 平板适配</span></span>
         </div>
       </div>
     </div>
@@ -499,13 +632,13 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap">
     <div class="sec-head rv">
       <span class="sec-eyebrow">Compatibility</span>
-      <h2>三大框架，一套模块</h2>
-      <p>刷了什么不重要，装上就能用。</p>
+      <h2 data-i18n="compat_title">三大框架，一套模块</h2>
+      <p data-i18n="compat_sub">刷了什么不重要，装上就能用。</p>
     </div>
     <div class="compat-grid rv">
-      <div class="compat-item"><img class="logo" src="icon-magisk.png" alt="Magisk"><b>Magisk</b><span>Magisk 26+</span></div>
-      <div class="compat-item"><img class="logo" src="icon-ksu.png" alt="KernelSU"><b>KernelSU</b><span>含 WebUI</span></div>
-      <div class="compat-item"><img class="logo" src="icon-apatch.png" alt="APatch"><b>APatch</b><span>APM 管理</span></div>
+      <div class="compat-item"><img class="logo" src="icon-magisk.png" alt="Magisk"><b>Magisk</b><span data-i18n="compat_magisk">Magisk 26+</span></div>
+      <div class="compat-item"><img class="logo" src="icon-ksu.png" alt="KernelSU"><b>KernelSU</b><span data-i18n="compat_ksu">含 WebUI</span></div>
+      <div class="compat-item"><img class="logo" src="icon-apatch.png" alt="APatch"><b>APatch</b><span data-i18n="compat_apatch">APM 管理</span></div>
     </div>
   </div>
 </section>
@@ -516,12 +649,12 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
     <div class="rust-card rv">
       <div>
         <span class="sec-eyebrow">Powered by Rust</span>
-        <h3>为什么用 Rust，而不是 shell</h3>
-        <p>shell 每个操作都要 fork 解释器、字符串处理脆弱、JSON 解析易错。Rust 编译后是一个几 KB 级静态二进制：启动毫秒级、内存极小、永不因脚本错误半途崩溃。</p>
+        <h3 data-i18n="rust_title">为什么用 Rust，而不是 shell</h3>
+        <p data-i18n="rust_sub">shell 每个操作都要 fork 解释器、字符串处理脆弱、JSON 解析易错。Rust 编译后是一个几 KB 级静态二进制：启动毫秒级、内存极小、永不因脚本错误半途崩溃。</p>
         <div class="rust-chips">
-          <span class="chip">纯静态 · 零系统依赖</span>
-          <span class="chip">aarch64 + armv7 双架构</span>
-          <span class="chip">内存安全</span>
+          <span class="chip" data-i18n="rust_c1">纯静态 · 零系统依赖</span>
+          <span class="chip" data-i18n="rust_c2">aarch64 + armv7 双架构</span>
+          <span class="chip" data-i18n="rust_c3">内存安全</span>
         </div>
       </div>
       <div class="code"><b># libman</b> 承担全部核心逻辑
@@ -539,25 +672,175 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap">
     <div class="sec-head rv">
       <span class="sec-eyebrow">WebUI</span>
-      <h2>好看，也好用</h2>
-      <p>iOS 18 通透毛玻璃，G2 连续圆角，触摸优先动效。手机平板都顺手。</p>
+      <h2 data-i18n="webui_title">好看，也好用</h2>
+      <p data-i18n="webui_sub">iOS 18 通透毛玻璃，G2 连续圆角，触摸优先动效。手机平板都顺手。</p>
     </div>
     <div class="webui rv">
       <div class="webui-bar">
         <span class="wdot"></span><span class="wdot"></span><span class="wdot"></span>
-        <div class="wtabs"><span class="on">已挂载</span><span>扩展库</span><span>深度隐藏</span><span>设置</span></div>
+        <span class="wtitle">LibPool · KsuWebUI</span>
+        <span class="wtag" data-i18n="wbar_tag">可交互演示</span>
       </div>
-      <div class="webui-body">
-        <div class="webui-grid">
-          <div class="w-card"><span class="w-ic c1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>adb</b><span>v35.0.2 · 已挂载</span><div class="bar"><i></i></div></div>
-          <div class="w-card"><span class="w-ic c2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>curl</b><span>v8.9.0 · 已挂载</span><div class="bar"><i></i></div></div>
-          <div class="w-card"><span class="w-ic c3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>git</b><span>v2.46.0 · 已挂载</span><div class="bar"><i></i></div></div>
-          <div class="w-card"><span class="w-ic c4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>python</b><span>解析最新版…</span><div class="bar"><i style="width:46%"></i></div></div>
-          <div class="w-card"><span class="w-ic c5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>nodejs</b><span>未安装 · 一键下载</span></div>
-          <div class="w-card"><span class="w-ic c6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>htop</b><span>v3.3.0 · 已挂载</span><div class="bar"><i></i></div></div>
+
+      <div class="wui-app" id="wuiApp">
+        <!-- 迷你 Hero -->
+        <div class="wui-hero">
+          <img src="libpool-logo.png" alt="">
+          <b>LibPool</b>
+          <span class="wtagline" data-i18n="wtagline">补齐安卓缺失的常用库 · by MINO Studio</span>
+          <span class="wui-status"><span class="dot"></span><span data-i18n="wstatus">已就绪</span></span>
         </div>
-        <div class="w-shadow" aria-hidden="true"></div>
+
+        <!-- 标签栏 -->
+        <div class="wui-tabs" id="wuiTabs" data-active="mounted">
+          <button class="wui-tab on" data-tab="mounted" data-i18n="wt_mounted">已挂载</button>
+          <button class="wui-tab" data-tab="store" data-i18n="wt_store">扩展库</button>
+          <button class="wui-tab" data-tab="hide" data-i18n="wt_hide">深度隐藏</button>
+          <button class="wui-tab" data-tab="settings" data-i18n="wt_settings">设置</button>
+          <span class="wui-ind" aria-hidden="true"></span>
+        </div>
+
+        <!-- 已挂载 -->
+        <section class="wui-panel on" id="wui-panel-mounted">
+          <div class="wui-stat">
+            <div class="sc"><b>6</b><span data-i18n="wst_mounted">已挂载</span></div>
+            <div class="sc"><b>18</b><span data-i18n="wst_dl">已下载</span></div>
+            <div class="sc"><b>233</b><span data-i18n="wst_total">可选总数</span></div>
+          </div>
+          <div class="wui-st"><h3 data-i18n="wmo_title">已挂载的库</h3><button class="wui-link" id="btnRefresh" data-i18n="wmo_refresh">刷新</button></div>
+          <div class="wui-rows" id="wuiMountedRows">
+            <div class="wui-row"><span class="ri wui-ic c1"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-5-6-5M12 19h8"/></svg></span><div class="rbody"><div class="rname">adb<span class="wui-tag" data-i18n="w_core">核心</span></div><div class="rver">v35.0.2 · /system/bin/adb</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="ri wui-ic c2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><div class="rbody"><div class="rname">curl<span class="wui-tag" data-i18n="w_core">核心</span></div><div class="rver">v8.9.0 · /system/bin/curl</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="ri wui-ic c3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></span><div class="rbody"><div class="rname">git</div><div class="rver">v2.46.0 · /system/bin/git</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="ri wui-ic c4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M3 9h18M8 14h4"/></svg></span><div class="rbody"><div class="rname">tar</div><div class="rver">v1.35 · /system/bin/tar</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="ri wui-ic c6"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></span><div class="rbody"><div class="rname">python</div><div class="rver">v3.12.4 · /system/bin/python3</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+          </div>
+          <div class="wui-hint" id="wuiMountedHint" hidden><b data-i18n="wmo_empty_b">还没有挂载任何库</b><span data-i18n="wmo_empty_t">到「扩展库」页挑几个常用的，开关一打开就能用。</span></div>
+        </section>
+
+        <!-- 扩展库 -->
+        <section class="wui-panel" id="wui-panel-store" hidden>
+          <div class="wui-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+            <input type="search" id="wuiSearch" placeholder="搜索库，例如 curl、python…" data-i18n-ph="wsearch_ph" autocomplete="off">
+          </div>
+          <div class="wui-chips" id="wuiChips">
+            <button class="wui-chip on" data-cat="all" data-i18n="wcat_all">全部</button>
+            <button class="wui-chip" data-cat="net" data-i18n="wcat_net">网络</button>
+            <button class="wui-chip" data-cat="dev" data-i18n="wcat_dev">开发</button>
+            <button class="wui-chip" data-cat="sys" data-i18n="wcat_sys">系统</button>
+            <button class="wui-chip" data-cat="media" data-i18n="wcat_media">媒体</button>
+          </div>
+          <div class="wui-store" id="wuiStore">
+            <div class="wui-scard" data-cat="net"><span class="ri wui-ic c2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>curl</b><div class="sver">v8.9.0</div><div class="sdesc" data-i18n="wd_curl">命令行网络请求工具</div><button class="wui-dl" data-lib="curl" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="net"><span class="ri wui-ic c6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-5-6-5M12 19h8"/></svg></span><b>openssh</b><div class="sver">v9.7p1</div><div class="sdesc" data-i18n="wd_openssh">远程连接客户端</div><button class="wui-dl" data-lib="openssh" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="dev"><span class="ri wui-ic c3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></span><b>git</b><div class="sver">v2.46.0</div><div class="sdesc" data-i18n="wd_git">分布式版本控制</div><button class="wui-dl" data-lib="git" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="dev"><span class="ri wui-ic c4"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>python</b><div class="sver">v3.12.4</div><div class="sdesc" data-i18n="wd_python">Python 3 解释器</div><button class="wui-dl" data-lib="python" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="dev"><span class="ri wui-ic c5"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M3 9h18M8 14h4"/></svg></span><b>nodejs</b><div class="sver">v20.15.0</div><div class="sdesc" data-i18n="wd_nodejs">JavaScript 运行时</div><button class="wui-dl" data-lib="nodejs" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="dev"><span class="ri wui-ic c1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-5-6-5M12 19h8"/></svg></span><b>vim</b><div class="sver">v9.1.0</div><div class="sdesc" data-i18n="wd_vim">终端文本编辑器</div><button class="wui-dl" data-lib="vim" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="sys"><span class="ri wui-ic c6"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span><b>htop</b><div class="sver">v3.3.0</div><div class="sdesc" data-i18n="wd_htop">交互式进程监视器</div><button class="wui-dl" data-lib="htop" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="sys"><span class="ri wui-ic gray"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-5-6-5M12 19h8"/></svg></span><b>strace</b><div class="sver">v6.9</div><div class="sdesc" data-i18n="wd_strace">系统调用跟踪</div><button class="wui-dl" data-lib="strace" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="sys"><span class="ri wui-ic c4"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l3 6h6l3-6M9 9l-3 12M15 9l3 12"/></svg></span><b>gdb</b><div class="sver">v14.2</div><div class="sdesc" data-i18n="wd_gdb">GNU 调试器</div><button class="wui-dl" data-lib="gdb" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="sys"><span class="ri wui-ic c3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 5l-2 14"/></svg></span><b>tmux</b><div class="sver">v3.4</div><div class="sdesc" data-i18n="wd_tmux">终端复用器</div><button class="wui-dl" data-lib="tmux" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="sys"><span class="ri wui-ic c2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></span><b>sqlite3</b><div class="sver">v3.46.0</div><div class="sdesc" data-i18n="wd_sqlite3">轻量嵌入式数据库</div><button class="wui-dl" data-lib="sqlite3" data-i18n="wdl">下载</button></div>
+            <div class="wui-scard" data-cat="media"><span class="ri wui-ic c5"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M10 9l5 3-5 3z"/></svg></span><b>ffmpeg</b><div class="sver">v6.1.1</div><div class="sdesc" data-i18n="wd_ffmpeg">音视频处理工具</div><button class="wui-dl" data-lib="ffmpeg" data-i18n="wdl">下载</button></div>
+          </div>
+          <div class="wui-hint" id="wuiEmpty" hidden><b data-i18n="wempty_b">没找到相关库</b><span data-i18n="wempty_t">换个关键词试试，或者看看其他分类。</span></div>
+        </section>
+
+        <!-- 深度隐藏 -->
+        <section class="wui-panel" id="wui-panel-hide" hidden>
+          <div class="wui-gcard">
+            <div class="wui-sname" data-i18n="wh_title">对着指定应用隐藏 root</div>
+            <div class="wui-sdesc" data-i18n="wh_desc">把银行、MOMO、淘宝这类会检测 root 的应用加进 KernelSU denylist，运行时彻底隐藏模块挂载与 su 痕迹，开启后立即生效。</div>
+          </div>
+          <div class="wui-st"><h3 data-i18n="wh_list">已选择的应用</h3><button class="wui-link" id="btnHideAdd" data-i18n="wh_add">添加应用</button></div>
+          <div class="wui-rows" id="wuiHideList">
+            <div class="wui-row"><span class="wui-avatar" style="background:#ff9500">建</span><div class="rbody"><div class="rname">中国建设银行</div><div class="rver" data-i18n="wh_denylist">已加入 denylist</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="wui-avatar" style="background:#ff3b30">淘</span><div class="rbody"><div class="rname">淘宝</div><div class="rver" data-i18n="wh_denylist">已加入 denylist</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+            <div class="wui-row"><span class="wui-avatar" style="background:#34c759">陌</span><div class="rbody"><div class="rname">MOMO 陌陌</div><div class="rver" data-i18n="wh_denylist">已加入 denylist</div></div><button class="wui-sw on" aria-label="开关"></button></div>
+          </div>
+        </section>
+
+        <!-- 设置 -->
+        <section class="wui-panel" id="wui-panel-settings" hidden>
+          <div class="wui-st"><h3 data-i18n="wset_appearance">外观</h3></div>
+          <div class="wui-gcard"><div class="wui-srow">
+            <div><div class="wui-sname" data-i18n="ws_theme_name">外观模式</div><div class="wui-sdesc" data-i18n="ws_theme_desc">跟随系统 / 亮色 / 暗色</div></div>
+            <div class="wui-seg" id="wuiThemeSeg"><button data-theme="auto" data-i18n="ws_auto">跟随</button><button data-theme="light" class="on" data-i18n="ws_light">亮色</button><button data-theme="dark" data-i18n="ws_dark">暗色</button></div>
+          </div></div>
+          <div class="wui-gcard">
+            <div class="wui-sname" data-i18n="ws_bg_name">背景图片</div>
+            <div class="wui-sdesc" data-i18n="ws_bg_desc">粘贴图片网址即可应用（演示环境仅提示）</div>
+            <input type="text" id="wuiBgInput" style="width:100%;margin-top:10px;padding:10px 14px;border-radius:16px;border:1px solid var(--stroke);background:var(--glass-strong);color:var(--text);font-family:inherit;font-size:12.5px;outline:none" placeholder="https://…（留空点清除）" data-i18n-ph="ws_bg_ph">
+            <div class="wui-btns" style="margin-top:12px">
+              <button class="wp" id="btnApplyBg" data-i18n="ws_bg_apply">应用背景</button>
+              <button class="wg" id="btnPickBg" data-i18n="ws_bg_pick">从相册选择</button>
+              <button class="wr" id="btnClearBg" data-i18n="ws_bg_clear">清除</button>
+            </div>
+          </div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_wall_name">壁纸模糊度</div><div class="wui-sdesc" data-i18n="ws_wall_desc">模糊越大背景越柔和</div></div><span class="wui-sval" id="wuiWallBlurVal">24</span></div>
+            <input type="range" class="wui-slider" id="wuiWallBlur" min="0" max="40" value="24" data-suffix="px" aria-label="壁纸模糊度">
+          </div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_alpha_name">卡片透明度</div><div class="wui-sdesc" data-i18n="ws_alpha_desc">调暗更通透，调亮更清楚</div></div><span class="wui-sval" id="wuiAlphaVal">100%</span></div>
+            <input type="range" class="wui-slider" id="wuiAlpha" min="20" max="100" value="100" data-suffix="%" aria-label="卡片透明度">
+          </div>
+          <div class="wui-gcard"><div class="wui-srow">
+            <div><div class="wui-sname" data-i18n="ws_shape_name">圆角类型</div><div class="wui-sdesc" data-i18n="ws_shape_desc">G2 连续更柔和，经典更抗锯齿</div></div>
+            <div class="wui-seg" id="wuiRadiusSeg"><button data-shape="squircle" class="on" data-i18n="ws_shape_g2">G2 连续</button><button data-shape="round" data-i18n="ws_shape_round">经典</button></div>
+          </div></div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_radius_name">圆角大小</div><div class="wui-sdesc" data-i18n="ws_radius_desc">G2 和经典圆角下都可自由调整</div></div><span class="wui-sval" id="wuiRadiusVal">38px</span></div>
+            <input type="range" class="wui-slider" id="wuiRadius" min="16" max="48" value="38" data-suffix="px" aria-label="圆角大小">
+          </div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_btna_name">按钮透明度</div><div class="wui-sdesc" data-i18n="ws_btna_desc">按钮底色的不透明度</div></div><span class="wui-sval" id="wuiBtnAlphaVal">92%</span></div>
+            <input type="range" class="wui-slider" id="wuiBtnAlpha" min="30" max="100" value="92" data-suffix="%" aria-label="按钮透明度">
+          </div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_btnb_name">按钮模糊度</div><div class="wui-sdesc" data-i18n="ws_btnb_desc">按钮背景的毛玻璃模糊强度</div></div><span class="wui-sval" id="wuiBtnBlurVal">18</span></div>
+            <input type="range" class="wui-slider" id="wuiBtnBlur" min="0" max="40" value="18" data-suffix="px" aria-label="按钮模糊度">
+          </div>
+
+          <div class="wui-st"><h3 data-i18n="wset_perf">性能</h3></div>
+          <div class="wui-gcard"><div class="wui-srow">
+            <div><div class="wui-sname" data-i18n="ws_gpu_name">GPU 加速</div><div class="wui-sdesc" data-i18n="ws_gpu_desc">高配机型开启后毛玻璃用独立 GPU 合成层渲染</div></div>
+            <button class="wui-sw" id="gpuSwitch" aria-label="GPU 加速"></button>
+          </div></div>
+
+          <div class="wui-st"><h3 data-i18n="wset_dl">下载</h3></div>
+          <div class="wui-gcard">
+            <div class="wui-srow"><div><div class="wui-sname" data-i18n="ws_mirror_name">下载镜像</div><div class="wui-sdesc" data-i18n="ws_mirror_desc">中国大陆用户可选清华或北外镜像，速度更稳</div></div></div>
+            <div class="wui-mirror" style="margin-top:12px">
+              <button class="on"><span class="mradio"></span><span class="wui-mtext"><span class="wui-mname" data-i18n="ws_mirror_official">官方源</span><span class="wui-mhost">packages.termux.dev</span></span></button>
+              <button><span class="mradio"></span><span class="wui-mtext"><span class="wui-mname" data-i18n="ws_mirror_tuna">清华镜像</span><span class="wui-mhost">mirrors.tuna.tsinghua.edu.cn</span></span></button>
+              <button><span class="mradio"></span><span class="wui-mtext"><span class="wui-mname" data-i18n="ws_mirror_bfsu">北外镜像</span><span class="wui-mhost">mirrors.bfsu.edu.cn</span></span></button>
+              <button><span class="mradio"></span><span class="wui-mtext"><span class="wui-mname" data-i18n="ws_mirror_custom">自定义地址</span><span class="wui-mhost" data-i18n="ws_mirror_custom_h">手动填写镜像 URL</span></span></button>
+            </div>
+            <div class="wui-btns" style="margin-top:12px"><button class="wp" id="btnSaveMirror" data-i18n="ws_mirror_save">保存镜像</button></div>
+          </div>
+
+          <div class="wui-st"><h3 data-i18n="wset_about">关于</h3></div>
+          <div class="wui-gcard wui-about">
+            <div class="arow"><span data-i18n="ws_ab_version">模块版本</span><span class="mono">1.0.0</span></div>
+            <div class="arow"><span data-i18n="ws_ab_arch">架构</span><span class="mono">aarch64</span></div>
+            <div class="arow"><span data-i18n="ws_ab_source">库来源</span><span data-i18n="ws_ab_source_v">233 个库 · Termux 仓库自动跟随最新版</span></div>
+            <div class="arow"><span data-i18n="ws_ab_support">支持系统</span><span>Magisk / KernelSU / APatch</span></div>
+            <div class="arow"><span data-i18n="ws_ab_by">出品</span><span>MINO Studio</span></div>
+            <div class="arow"><span data-i18n="ws_ab_license">开源许可</span><span>Apache-2.0</span></div>
+          </div>
+          <div class="wui-btns" style="margin-bottom:4px">
+            <button class="wg" id="btnLogView" style="flex:1" data-i18n="ws_ab_log">查看日志</button>
+            <button class="wg" id="btnShowAnn" style="flex:1" data-i18n="ws_ab_ann">重新显示欢迎公告</button>
+          </div>
+          <button class="wui-danger" id="btnReset" data-i18n="ws_ab_reset">全部卸载并重置</button>
+        </section>
+
+        <div class="wui-toast" id="wuiToast" aria-live="polite"></div>
       </div>
+      <div class="wui-shadow" aria-hidden="true"></div>
     </div>
   </div>
 </section>
@@ -567,12 +850,12 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap">
     <div class="sec-head rv">
       <span class="sec-eyebrow">Install</span>
-      <h2>三步，装好</h2>
+      <h2 data-i18n="inst_title">三步，装好</h2>
     </div>
     <div class="steps">
-      <div class="step rv" data-d="0"><span class="num">1</span><h3>下载模块</h3><p>从 <a href="#download">Releases</a> 或镜像下载 <b>libpool-&lt;版本&gt;.zip</b>。</p></div>
-      <div class="step rv" data-d="1"><span class="num">2</span><h3>安装到管理器</h3><p>Magisk / KernelSU / APatch → 模块 → 从本地安装 → 选择该 zip。</p></div>
-      <div class="step rv" data-d="2"><span class="num">3</span><h3>开始使用</h3><p>重启后打开 KernelSU 模块 WebUI，核心库自动就位。</p></div>
+      <div class="step rv" data-d="0"><span class="num">1</span><h3 data-i18n="inst1_h">下载模块</h3><p data-i18n-html="inst1_p">从 <a href="#download">Releases</a> 或镜像下载 <b>libpool-&lt;版本&gt;.zip</b>。</p></div>
+      <div class="step rv" data-d="1"><span class="num">2</span><h3 data-i18n="inst2_h">安装到管理器</h3><p data-i18n="inst2_p">Magisk / KernelSU / APatch → 模块 → 从本地安装 → 选择该 zip。</p></div>
+      <div class="step rv" data-d="2"><span class="num">3</span><h3 data-i18n="inst3_h">开始使用</h3><p data-i18n="inst3_p">重启后打开 KernelSU 模块 WebUI，核心库自动就位。</p></div>
     </div>
   </div>
 </section>
@@ -581,8 +864,8 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
 <section id="download" style="padding-top:0">
   <div class="wrap">
     <div class="dl rv">
-      <h2>现在开始，补齐命令行</h2>
-      <p>免费 · 开源（Apache-2.0）· 支持 Magisk / KernelSU / APatch 与 32 位设备。大陆用户建议走镜像下载。</p>
+      <h2 data-i18n="dl_title">现在开始，补齐命令行</h2>
+      <p data-i18n="dl_sub">免费 · 开源（Apache-2.0）· 支持 Magisk / KernelSU / APatch 与 32 位设备。大陆用户建议走镜像下载。</p>
       <div class="dl-btns">
         <a class="btn btn-primary" href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
@@ -593,7 +876,7 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
           OpenList 镜像
         </a>
       </div>
-      <p class="dl-note">国内加速：下载页面内也提供 <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Release 镜像链接</a> · 想反馈 / 提需求 → <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">Issues</a></p>
+      <p class="dl-note" data-i18n-html="dl_note">国内加速：下载页面内也提供 <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Release 镜像链接</a> · 想反馈 / 提需求 → <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">Issues</a></p>
     </div>
   </div>
 </section>
@@ -632,7 +915,7 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
       </div>
       <div class="faq-item">
         <button class="faq-q">想反馈 Bug 或提需求？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>请在 <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">GitHub Issues</a> 新建 Issue，尽量附上：机型 / 安卓版本 / 架构（uname -m）、模块版本号、复现步骤、WebUI 控制台日志。</p></div>
+        <div class="faq-a"><p data-i18n-html="faq7_a">请在 <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">GitHub Issues</a> 新建 Issue，尽量附上：机型 / 安卓版本 / 架构（uname -m）、模块版本号、复现步骤、WebUI 控制台日志。</p></div>
       </div>
     </div>
   </div>
@@ -641,7 +924,7 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
 <!-- 页脚 -->
 <footer>
   <div class="wrap foot-in">
-    <div class="foot-brand"><img src="libpool-logo.png" alt="">LibPool · 库池</div>
+    <div class="foot-brand"><img src="libpool-logo.png" alt="">LibPool · <span data-i18n="brand_sub">库池</span></div>
     <div class="foot-links">
       <a href="https://github.com/MineACEx/libpool" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Releases</a>
@@ -649,7 +932,7 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
       <a href="https://github.com/MineACEx/libpool/blob/master/README.md" target="_blank" rel="noopener">README</a>
       <a href="https://github.com/MineACEx/libpool/blob/master/LICENSE" target="_blank" rel="noopener">Apache-2.0</a>
     </div>
-    <div class="foot-copy">© 2026 LibPool · MINO · Himer &nbsp;·&nbsp; Apache License 2.0</div>
+    <div class="foot-copy">© 2026 LibPool · MINO Studio &nbsp;·&nbsp; Apache License 2.0</div>
   </div>
 </footer>
 
@@ -664,6 +947,141 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   function apply(t){root.setAttribute('data-theme',t);sw.setAttribute('aria-pressed',t==='dark');
     try{localStorage.setItem('lp-theme',t)}catch(e){}}
   sw.addEventListener('click',function(){apply(cur()==='dark'?'light':'dark')});
+
+  /* ============ 中英文切换 ============ */
+  var I18N={
+    cur:(root.getAttribute('data-lang')||'zh'),
+    en:{
+      brand_sub:"Library Pool",
+      nav_features:"Features",nav_compat:"Compatible",nav_rust:"Rust",nav_install:"Install",
+      nav_download:"Download",nav_faq:"FAQ",nav_dl:"Download",
+      hero_badge:"Works with Magisk · KernelSU · APatch",
+      hero_h1:'Complete Android\'s<br>missing <span class="hl">command line</span>',
+      hero_sub:'LibPool (Library Pool) mounts 233 extension libs and 18 core libs into <b>/system/bin</b> with one tap — auto-follows the latest versions, works instantly without rebooting, and never overwrites your system files.',
+      cta_dl:"Free Download",cta_gh:"View on GitHub",
+      tag1:"233 Extension Libs",tag2:"18 Core Libs",tag3:"Rust-native · Zero resident",
+      tag4:"32-bit ready",tag5:"iOS 18 glass WebUI",tag6:"Cloud update",
+      fe_title:"The libs you need, installed",fe_sub:"Standard magic mount to /system — no system-partition writes; removing a lib never touches native files.",
+      fe0_h:"extension libs",fe0_p:"adb, fastboot, curl, git, htop, strace, gdb, tmux, ffmpeg, nodejs, python… 10 categories, the usual suspects.",
+      fe1_h:"core libs included",fe1_p:"curl, git, tar, unzip, awk and more — ready at boot, out of the box.",
+      fe2_h:"Auto-update",fe2_p:"Libs resolve the latest version from Termux official / mirror repos — no manual updates.",
+      fe3_h:"Instant mount",fe3_p:"mount / unmount use hot overlayfs — usable immediately, no reboot needed.",
+      fe4_h:"Never overwrites",fe4_p:"Checks same-name bin / lib under /system first and skips them — native files stay untouched.",
+      fe5_h:"Deep-hide root",fe5_p:"Add root-detecting apps (banking, MOMO, Taobao…) to the KernelSU denylist — hides all su traces at runtime, takes effect instantly.",
+      fe6_h:"Light · zero resident",fe6_p:"A static Rust binary that runs only during install / mount and exits — idle usage is near zero.",
+      fe7_h:"32-bit ready",fe7_p:"armv7 devices automatically use 32-bit native binaries; other ABIs fall back to shell scripts.",
+      fe8_h:"Cloud update",fe8_p:"Compares local vs cloud versions and pops up automatically when a newer one is found.",
+      fe9_h:"Frosted-glass WebUI",fe9_p:'Built-in KsuWebUI: iOS 18 glass, G2 continuous corners, light / dark themes, custom background & wallpaper blur. Mounted / Store / Deep Hide / Settings in one place, logs centralized under <b>log/</b>.',
+      fe9_c1:"Touch-first motion",fe9_c2:"Phone · tablet ready",
+      compat_title:"Three frameworks, one module",compat_sub:"Whatever you flashed, install and go.",
+      compat_magisk:"Magisk 26+",compat_ksu:"WebUI included",compat_apatch:"APM managed",
+      rust_title:"Why Rust, not shell?",
+      rust_sub:"Every shell step forks an interpreter, string handling is fragile and JSON parsing is error-prone. Rust compiles into a few-KB static binary: millisecond startup, tiny memory, never dies midway from a script error.",
+      rust_c1:"Static · zero system deps",rust_c2:"aarch64 + armv7",rust_c3:"Memory-safe",
+      webui_title:"Beautiful, and useful",webui_sub:"iOS 18 frosted glass, G2 continuous corners, touch-first motion. Feels right on phones and tablets.",
+      wbar_tag:"Live demo",
+      wtagline:"The common libs Android is missing · by MINO Studio",wstatus:"Ready",
+      wt_mounted:"Mounted",wt_store:"Store",wt_hide:"Deep Hide",wt_settings:"Settings",
+      wst_mounted:"Mounted",wst_dl:"Downloaded",wst_total:"Available",
+      wmo_title:"Mounted libs",wmo_refresh:"Refresh",w_core:"Core",
+      wmo_empty_b:"Nothing mounted yet",wmo_empty_t:"Pick a few from the Store tab — flip the switch and they work.",
+      wsearch_ph:"Search libs, e.g. curl, python…",
+      wcat_all:"All",wcat_net:"Network",wcat_dev:"Dev",wcat_sys:"System",wcat_media:"Media",
+      wd_curl:"Command-line HTTP client",wd_openssh:"Secure remote client",wd_git:"Distributed version control",
+      wd_python:"Python 3 interpreter",wd_nodejs:"JavaScript runtime",wd_vim:"Terminal text editor",
+      wd_htop:"Interactive process monitor",wd_strace:"Syscall tracer",wd_gdb:"GNU debugger",
+      wd_tmux:"Terminal multiplexer",wd_sqlite3:"Lightweight embedded database",wd_ffmpeg:"Audio / video toolkit",
+      wdl:"Download",
+      wempty_b:"No matching libs",wempty_t:"Try another keyword or a different category.",
+      wh_title:"Hide root from specific apps",
+      wh_desc:"Add root-detecting apps (banking, MOMO, Taobao…) to the KernelSU denylist — module mounts and su traces stay hidden at runtime, effective immediately.",
+      wh_list:"Selected apps",wh_add:"Add app",wh_denylist:"In denylist",
+      wset_appearance:"Appearance",
+      ws_theme_name:"Appearance mode",ws_theme_desc:"Follow system / Light / Dark",
+      ws_auto:"Auto",ws_light:"Light",ws_dark:"Dark",
+      ws_bg_name:"Background image",ws_bg_desc:"Paste an image URL to apply (demo shows a hint only)",
+      ws_bg_ph:"https://… (leave empty to clear)",
+      ws_bg_apply:"Apply",ws_bg_pick:"Pick from gallery",ws_bg_clear:"Clear",
+      ws_wall_name:"Wallpaper blur",ws_wall_desc:"Higher blur, softer background",
+      ws_alpha_name:"Card opacity",ws_alpha_desc:"Lower is more translucent, higher is clearer",
+      ws_shape_name:"Corner style",ws_shape_desc:"G2 is smoother, classic is crisper",
+      ws_shape_g2:"G2",ws_shape_round:"Classic",
+      ws_radius_name:"Corner radius",ws_radius_desc:"Adjustable for both styles",
+      ws_btna_name:"Button opacity",ws_btna_desc:"Opacity of the button background",
+      ws_btnb_name:"Button blur",ws_btnb_desc:"Glass blur strength of button background",
+      wset_perf:"Performance",
+      ws_gpu_name:"GPU acceleration",ws_gpu_desc:"Renders the glass on a dedicated GPU layer on high-end devices",
+      wset_dl:"Download",
+      ws_mirror_name:"Download mirror",ws_mirror_desc:"Mainland China users can pick TUNA or BFSU mirrors for steadier speed",
+      ws_mirror_official:"Official",ws_mirror_tuna:"TUNA mirror",ws_mirror_bfsu:"BFSU mirror",
+      ws_mirror_custom:"Custom URL",ws_mirror_custom_h:"Type a mirror URL manually",ws_mirror_save:"Save mirror",
+      wset_about:"About",
+      ws_ab_version:"Module version",ws_ab_arch:"Architecture",ws_ab_source:"Library source",
+      ws_ab_source_v:"233 libs · auto-follows latest from Termux repos",
+      ws_ab_support:"Supported",ws_ab_by:"By",ws_ab_license:"License",
+      ws_ab_log:"View logs",ws_ab_ann:"Re-show welcome notice",ws_ab_reset:"Uninstall all & reset",
+      inst_title:"Three steps to install",
+      inst1_h:"Download the module",
+      inst1_p:'Download <b>libpool-&lt;version&gt;.zip</b> from <a href="#download">Releases</a> or a mirror.',
+      inst2_h:"Install in a manager",inst2_p:"Magisk / KernelSU / APatch → Modules → Install from storage → pick the zip.",
+      inst3_h:"Start using",inst3_p:"Reboot, open the KernelSU module WebUI — core libs are ready automatically.",
+      dl_title:"Start here, complete your command line",
+      dl_sub:"Free · open source (Apache-2.0) · supports Magisk / KernelSU / APatch and 32-bit devices. Mainland users may prefer a mirror.",
+      dl_note:'Faster in China: mirror links are on the <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Release page</a> · Feedback / requests → <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">Issues</a>',
+      faq_title:"FAQ",
+      faq1_q:"Will it slow down / hang boot?",faq1_a:"No. customize.sh returns in seconds, service.sh replay is guarded by a 60s timeout, and core-lib installs run fully in the background. Any failure only logs; disabling the module fully restores boot.",
+      faq2_q:"Does it drain battery / resources?",faq2_a:"No daemons, no polling, nothing resident at boot — idle CPU / RAM usage is near zero.",
+      faq3_q:"Does it work on 32-bit phones?",faq3_a:"Yes. armv7 devices automatically use 32-bit native binaries; other ABIs fall back to shell — no manual setup.",
+      faq4_q:"Installed but the command is missing?",faq4_a:"Some libs (e.g. python) also install dependency .so files to /system/lib. If a command is still missing, toggle that lib once in the WebUI.",
+      faq5_q:"Downloads are slow in mainland China?",faq5_a:"Pick the TUNA or BFSU mirror under Settings → Download mirror, or use the OpenList mirror in the download section.",
+      faq6_q:"Will trimming break the system?",faq6_a:"No. The module only mounts libs you enabled into /system/bin, never modifies system partitions, and removing a lib doesn't touch system files.",
+      faq7_q:"Want to report a bug or request a feature?",
+      faq7_a:'Open an issue at <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">GitHub Issues</a> — include device model / Android version / ABI (uname -m), module version, reproduction steps and WebUI console logs.'
+    },
+    toast:{
+      '已开始下载 ':"Downloading ",'已在下载队列中':"Already in the queue",'已添加':"Added",'下载':"Download",
+      '已重新挂载，共 6 个库':"Re-mounted, 6 libs active",'演示环境暂不支持选择应用':"Not supported in this demo",
+      '已应用背景图片（演示）':"Background applied (demo)",'请先粘贴图片网址':"Paste an image URL first",
+      '演示环境暂不支持相册选择':"Gallery picker unavailable in demo",'已清除背景':"Background cleared",
+      '镜像已保存':"Mirror saved",'日志为空，一切正常':"Logs are clean",'欢迎公告已重新显示':"Welcome notice re-shown",
+      '演示环境不会真的重置，放心':"Nothing actually resets in this demo",
+      'GPU 加速已开启':"GPU acceleration on",'GPU 加速已关闭':"GPU acceleration off"
+    }
+  };
+  var I18N_ZH={};
+  document.querySelectorAll('[data-i18n]').forEach(function(el){var k=el.getAttribute('data-i18n');if(!(k in I18N_ZH))I18N_ZH[k]=el.textContent;});
+  document.querySelectorAll('[data-i18n-html]').forEach(function(el){var k=el.getAttribute('data-i18n-html');if(!(k in I18N_ZH))I18N_ZH[k]=el.innerHTML;});
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el){var k=el.getAttribute('data-i18n-ph');if(!(k in I18N_ZH))I18N_ZH[k]=el.getAttribute('placeholder')||'';});
+  function T(zh){return I18N.cur==='en'?(I18N.toast[zh]||zh):zh}
+  function applyLang(lang){
+    I18N.cur=lang;
+    root.setAttribute('data-lang',lang);
+    document.documentElement.lang=(lang==='zh')?'zh-CN':'en';
+    document.title=(lang==='en')?'LibPool · Library Pool — Complete the command line Android is missing':'LibPool · 库池 — 补齐 Android 缺失的命令行';
+    try{localStorage.setItem('lp-lang',lang)}catch(e){}
+    var map=(lang==='en')?I18N.en:I18N_ZH;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k=el.getAttribute('data-i18n');if(map[k]==null)return;
+      if(el.classList&&el.classList.contains('faq-q')){  /* 保留 chevron 图标，只替换首个文本节点 */
+        var ns=el.childNodes;
+        for(var i=0;i<ns.length;i++){
+          if(ns[i].nodeType===3&&ns[i].textContent.trim()){ns[i].textContent=map[k];return;}
+        }
+      }
+      el.textContent=map[k];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+      var k=el.getAttribute('data-i18n-html');if(map[k]!=null)el.innerHTML=map[k];
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      var k=el.getAttribute('data-i18n-ph');if(map[k]!=null)el.setAttribute('placeholder',map[k]);
+    });
+  }
+  var lsw=document.getElementById('langSw');
+  if(lsw){lsw.addEventListener('click',function(){
+    applyLang(I18N.cur==='zh'?'en':'zh');
+  });}
+  applyLang(I18N.cur);
 
   /* 涟漪（触摸优先：pointerdown 触发） */
   document.addEventListener('pointerdown',function(e){
@@ -698,6 +1116,124 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
       }
     });
   });
+
+  /* ============ WebUI 演示交互（可点页签 / 开关 / 下载 / 设置） ============ */
+  var wui=document.getElementById('wuiApp');
+  if(wui){
+    var toast=document.getElementById('wuiToast'),toastTimer=null;
+    function wuiToast(msg){
+      toast.textContent=msg;toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer=setTimeout(function(){toast.classList.remove('show')},1800);
+    }
+
+    /* 页签切换（指示器同步位移，面板并行动画） */
+    var tabs=document.getElementById('wuiTabs');
+    tabs.addEventListener('click',function(e){
+      var tab=e.target.closest('.wui-tab');if(!tab)return;
+      tabs.dataset.active=tab.dataset.tab;
+      tabs.querySelectorAll('.wui-tab').forEach(function(t){t.classList.toggle('on',t===tab)});
+      document.querySelectorAll('.wui-panel').forEach(function(p){
+        p.classList.toggle('on',p.id==='wui-panel-'+tab.dataset.tab);
+      });
+    });
+
+    /* 开关 */
+    wui.querySelectorAll('.wui-sw').forEach(function(s){
+      s.addEventListener('click',function(){s.classList.toggle('on')});
+    });
+
+    /* 下载按钮 */
+    wui.querySelectorAll('.wui-dl').forEach(function(d){
+      d.addEventListener('click',function(){
+        if(d.classList.contains('done')){wuiToast(T('已在下载队列中'));return}
+        d.classList.add('done');d.textContent=T('已添加');
+        wuiToast(T('已开始下载 ')+d.dataset.lib);
+        setTimeout(function(){d.classList.remove('done');d.textContent=T('下载')},2200);
+      });
+    });
+
+    /* 扩展库：分类筛选 + 搜索（防抖） */
+    var store=document.getElementById('wuiStore');
+    var cards=Array.prototype.slice.call(store.querySelectorAll('.wui-scard'));
+    var chips=document.getElementById('wuiChips');
+    var search=document.getElementById('wuiSearch'),stimer=null;
+    function applyStore(){
+      var chip=chips.querySelector('.wui-chip.on');
+      var cat=chip?chip.dataset.cat:'all';
+      var kw=search.value.trim().toLowerCase();
+      var n=0;
+      cards.forEach(function(c){
+        var hit=(cat==='all'||c.dataset.cat===cat)&&(!kw||c.textContent.toLowerCase().indexOf(kw)>-1);
+        c.style.display=hit?'':'none';
+        if(hit)n++;
+      });
+      document.getElementById('wuiEmpty').hidden=n>0;
+    }
+    chips.addEventListener('click',function(e){
+      var c=e.target.closest('.wui-chip');if(!c)return;
+      chips.querySelectorAll('.wui-chip').forEach(function(x){x.classList.toggle('on',x===c)});
+      applyStore();
+    });
+    search.addEventListener('input',function(){clearTimeout(stimer);stimer=setTimeout(applyStore,180)});
+
+    /* 刷新 / 添加应用 */
+    document.getElementById('btnRefresh').addEventListener('click',function(){wuiToast(T('已重新挂载，共 6 个库'))});
+    document.getElementById('btnHideAdd').addEventListener('click',function(){wuiToast(T('演示环境暂不支持选择应用'))});
+
+    /* 滑杆：实时更新数值并应用到可见样式 */
+    function bindSlider(id,valId,suffix,applyVar){
+      var s=document.getElementById(id),v=document.getElementById(valId);
+      if(!s)return;
+      s.addEventListener('input',function(){
+        v.textContent=s.value+suffix;
+        if(applyVar)wui.style.setProperty(applyVar,s.value+suffix);
+      });
+    }
+    bindSlider('wuiAlpha','wuiAlphaVal','%','--walpha');
+    bindSlider('wuiRadius','wuiRadiusVal','px','--r-card');
+    bindSlider('wuiWallBlur','wuiWallBlurVal','px','--wblur');
+    bindSlider('wuiBtnAlpha','wuiBtnAlphaVal','%',null);
+    bindSlider('wuiBtnBlur','wuiBtnBlurVal','px',null);
+
+    /* 分段控件 */
+    function bindSeg(id,apply){
+      var seg=document.getElementById(id);if(!seg)return;
+      seg.addEventListener('click',function(e){
+        var b=e.target.closest('button');if(!b)return;
+        seg.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});
+        if(apply)apply(b);
+      });
+    }
+    bindSeg('wuiThemeSeg',function(b){apply(b.dataset.theme)});
+    bindSeg('wuiRadiusSeg',function(b){wui.style.setProperty('--wshape',b.dataset.shape)});
+
+    /* 下载镜像单选 */
+    var mirror=wui.querySelector('.wui-mirror');
+    mirror.addEventListener('click',function(e){
+      var b=e.target.closest('button');if(!b)return;
+      mirror.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b)});
+    });
+
+    /* 各类操作按钮提示 */
+    var btnMap={
+      btnApplyBg:function(){var v=document.getElementById('wuiBgInput').value.trim();
+        wuiToast(T(v?'已应用背景图片（演示）':'请先粘贴图片网址'))},
+      btnPickBg:function(){wuiToast(T('演示环境暂不支持相册选择'))},
+      btnClearBg:function(){document.getElementById('wuiBgInput').value='';wuiToast(T('已清除背景'))},
+      btnSaveMirror:function(){wuiToast(T('镜像已保存'))},
+      btnLogView:function(){wuiToast(T('日志为空，一切正常'))},
+      btnShowAnn:function(){wuiToast(T('欢迎公告已重新显示'))},
+      btnReset:function(){wuiToast(T('演示环境不会真的重置，放心'))}
+    };
+    Object.keys(btnMap).forEach(function(id){
+      var b=document.getElementById(id);if(b)b.addEventListener('click',btnMap[id]);
+    });
+
+    document.getElementById('gpuSwitch').addEventListener('click',function(){
+      wuiToast(T(this.classList.contains('on')?'GPU 加速已开启':'GPU 加速已关闭'));
+    });
+  }
 
   /* 滚动入场（IntersectionObserver，打断友好：重复进入不重播） */
   var rvs=document.querySelectorAll('.rv');
