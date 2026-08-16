@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LibPool · 库池 — 补齐 Android 缺失的命令行</title>
+<meta name="description" content="LibPool（库池）：233 个扩展库一键挂载到 /system，Magisk / KernelSU / APatch 通用，Rust 原生低功耗，iOS 18 通透毛玻璃 WebUI。">
+<link rel="icon" type="image/png" href="libpool-logo.png">
+<script>
+(function(){try{var t=localStorage.getItem('lp-theme');if(!t){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+</script>
+<style>
+/* ============ 令牌 ============ */
+:root{
+  --ease:cubic-bezier(.25,.1,.25,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.4,.5,1);
+  --corner-sq:squircle;
+  --radius:26px;
+  --radius-lg:34px;
+  --nav-h:64px;
+  --c:clamp(28px,7.5vw,44px);
+}
+html[data-theme="light"]{
+  --bg:#f5f5f7;
+  --bg-deep:#ffffff;
+  --text:#1d1d1f;
+  --text-2:#6e6e73;
+  --text-3:#86868b;
+  --glass:rgba(255,255,255,.66);
+  --glass-strong:rgba(255,255,255,.78);
+  --stroke:rgba(0,0,0,.06);
+  --card-bg:rgba(255,255,255,.72);
+  --accent:#0071e3;
+  --accent-strong:#0077ed;
+  --accent-ink:#ffffff;
+  --shadow:0 8px 32px rgba(0,0,0,.06);
+  --shadow-hover:0 18px 48px rgba(0,0,0,.12);
+  --orb-1:rgba(0,113,227,.32);
+  --orb-2:rgba(102,196,255,.34);
+  --orb-3:rgba(90,200,250,.22);
+  --gridline:rgba(0,0,0,.045);
+  --code-bg:rgba(0,0,0,.035);
+}
+html[data-theme="dark"]{
+  --bg:#000000;
+  --bg-deep:#0b0b0c;
+  --text:#f5f5f7;
+  --text-2:#a1a1a6;
+  --text-3:#86868b;
+  --glass:rgba(28,28,30,.6);
+  --glass-strong:rgba(44,44,46,.72);
+  --stroke:rgba(255,255,255,.09);
+  --card-bg:rgba(28,28,30,.62);
+  --accent:#0a84ff;
+  --accent-strong:#409cff;
+  --accent-ink:#ffffff;
+  --shadow:0 8px 32px rgba(0,0,0,.45);
+  --shadow-hover:0 18px 52px rgba(0,0,0,.6);
+  --orb-1:rgba(10,132,255,.30);
+  --orb-2:rgba(64,156,255,.26);
+  --orb-3:rgba(0,113,227,.20);
+  --gridline:rgba(255,255,255,.06);
+  --code-bg:rgba(255,255,255,.06);
+}
+
+/* ============ 基础 ============ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text','PingFang SC','Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  transition:background .5s var(--ease),color .5s var(--ease);
+  min-height:100vh;
+}
+::selection{background:var(--accent);color:#fff}
+img{max-width:100%;display:block}
+a{color:var(--accent);text-decoration:none}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+
+/* 背景光斑 + 网格 */
+.bg-deco{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.bg-deco .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.9;transition:background .5s var(--ease)}
+.orb.o1{width:44vmax;height:44vmax;top:-14vmax;left:-10vmax;background:var(--orb-1)}
+.orb.o2{width:40vmax;height:40vmax;top:6vmax;right:-14vmax;background:var(--orb-2)}
+.orb.o3{width:34vmax;height:34vmax;bottom:-12vmax;left:30%;background:var(--orb-3)}
+.bg-deco .grid{position:absolute;inset:0;
+  background-image:linear-gradient(var(--gridline) 1px,transparent 1px),linear-gradient(90deg,var(--gridline) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 78%);
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 78%);
+  opacity:.5;
+}
+
+/* 版心 */
+.wrap{width:min(1120px,92vw);margin:0 auto}
+@media (min-width:760px){.wrap{width:min(1040px,88vw)}}
+
+/* ============ 导航 ============ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:var(--nav-h);
+  display:flex;align-items:center;
+  backdrop-filter:saturate(180%) blur(24px);
+  -webkit-backdrop-filter:saturate(180%) blur(24px);
+  background:color-mix(in srgb,var(--glass) 82%,transparent);
+  border-bottom:1px solid var(--stroke);
+  transition:background .5s var(--ease),border-color .5s var(--ease);
+}
+.nav-in{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.nav-brand img{width:30px;height:30px;border-radius:8px}
+.nav-brand b{font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.nav-brand b em{font-style:normal;color:var(--text-3);font-weight:500}
+.nav-links{display:flex;align-items:center;gap:2px;overflow:hidden}
+.nav-links a{
+  position:relative;padding:8px 12px;border-radius:980px;
+  font-size:14px;color:var(--text-2);font-weight:500;white-space:nowrap;
+  transition:color .3s var(--ease),background .3s var(--ease);
+}
+.nav-links a:hover{color:var(--text);background:color-mix(in srgb,var(--text) 7%,transparent)}
+.nav-links a:active{opacity:.6}
+.nav-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* 主题开关 */
+.theme-sw{
+  position:relative;width:40px;height:24px;border-radius:980px;
+  background:color-mix(in srgb,var(--text) 14%,transparent);
+  transition:background .4s var(--ease);
+}
+.theme-sw::after{content:'';position:absolute;inset:-10px;border-radius:980px}
+.theme-sw .knob{
+  position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+  background:var(--bg-deep);box-shadow:0 1px 3px rgba(0,0,0,.25);
+  transition:transform .45s var(--ease-spring);
+  display:grid;place-items:center;font-size:10px;line-height:1;
+}
+html[data-theme="dark"] .theme-sw .knob{transform:translateX(16px)}
+.theme-sw .knob svg{width:11px;height:11px}
+
+/* 下载按钮 */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border-radius:980px;font-weight:600;font-size:16px;line-height:1;
+  padding:14px 26px;min-height:48px;position:relative;overflow:hidden;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),background .3s var(--ease);
+  -webkit-user-select:none;user-select:none;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 18px color-mix(in srgb,var(--accent) 38%,transparent)}
+.btn-primary:hover{background:var(--accent-strong);transform:translateY(-1px);box-shadow:0 8px 26px color-mix(in srgb,var(--accent) 46%,transparent)}
+.btn-ghost{
+  background:var(--glass-strong);color:var(--text);
+  border:1px solid var(--stroke);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 2px 10px rgba(0,0,0,.03);
+}
+.btn-ghost:hover{background:color-mix(in srgb,var(--bg-deep) 92%,transparent);transform:translateY(-1px)}
+.btn-sm{padding:10px 18px;font-size:14px;min-height:40px}
+
+/* 涟漪 */
+.ripple{position:absolute;border-radius:50%;transform:scale(0);pointer-events:none;
+  background:rgba(255,255,255,.5);animation:rip .6s var(--ease-out) forwards}
+html[data-theme="dark"] .ripple{background:rgba(255,255,255,.18)}
+@keyframes rip{to{transform:scale(3);opacity:0}}
+
+/* ============ Hero ============ */
+.hero{position:relative;padding:calc(var(--nav-h) + clamp(48px,10vh,96px)) 0 clamp(56px,9vh,96px);text-align:center}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 16px;border-radius:980px;font-size:13px;font-weight:500;color:var(--text-2);
+  background:var(--glass-strong);border:1px solid var(--stroke);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  margin-bottom:24px;
+}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent);animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.hero h1{
+  font-size:clamp(40px,9.5vw,80px);font-weight:700;line-height:1.04;letter-spacing:-.035em;
+  max-width:14em;margin:0 auto 22px;
+  background:linear-gradient(180deg,var(--text) 60%,var(--text-3));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.hero h1 .hl{color:var(--accent);-webkit-text-fill-color:var(--accent)}
+.hero p.sub{
+  font-size:clamp(16px,3vw,21px);color:var(--text-2);font-weight:400;
+  max-width:34em;margin:0 auto 34px;letter-spacing:-.005em;
+}
+.hero-cta{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-bottom:30px}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tag{
+  padding:6px 14px;border-radius:980px;font-size:13px;font-weight:500;color:var(--text-2);
+  background:var(--glass);border:1px solid var(--stroke);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+
+/* ============ 通用 section ============ */
+section{padding:clamp(56px,9vh,96px) 0;position:relative}
+.sec-head{text-align:center;max-width:42em;margin:0 auto clamp(36px,6vh,60px)}
+.sec-eyebrow{
+  display:inline-block;font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;
+}
+.sec-head h2{font-size:clamp(28px,6vw,44px);font-weight:700;letter-spacing:-.025em;line-height:1.12;margin-bottom:14px}
+.sec-head p{font-size:clamp(15px,2.6vw,18px);color:var(--text-2)}
+
+/* ============ 特性 Bento ============ */
+.bento{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:640px){.bento{grid-template-columns:1fr 1fr}}
+@media (min-width:960px){.bento{grid-template-columns:repeat(3,1fr)}.bento .tall{grid-row:span 2}}
+.cell{
+  position:relative;padding:26px;border-radius:var(--radius);
+  corner-shape:var(--corner-sq);
+  background:var(--card-bg);
+  border:1px solid var(--stroke);
+  backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  transition:transform .45s var(--ease),box-shadow .45s var(--ease),background .5s var(--ease),border-color .5s var(--ease);
+}
+@media (hover:hover){
+  .cell:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);border-color:color-mix(in srgb,var(--accent) 26%,var(--stroke))}
+}
+.cell:active{transform:scale(.985)}
+.cell .ic{
+  width:46px;height:46px;border-radius:14px;corner-shape:var(--corner-sq);
+  display:grid;place-items:center;margin-bottom:16px;
+  background:color-mix(in srgb,var(--accent) 13%,transparent);
+  color:var(--accent);
+  transition:transform .45s var(--ease);
+}
+@media (hover:hover){.cell:hover .ic{transform:scale(1.06)}}
+.cell .ic svg{width:22px;height:22px}
+.cell h3{font-size:19px;font-weight:600;letter-spacing:-.01em;margin-bottom:8px}
+.cell p{font-size:14.5px;color:var(--text-2);line-height:1.55}
+.cell .big{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:6px;
+  background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 40%,#7bd7ff));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ============ 兼容三平台 ============ */
+.compat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:640px;margin:0 auto}
+.compat-item{
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:22px 12px;border-radius:var(--radius);corner-shape:var(--corner-sq);
+  background:var(--glass);border:1px solid var(--stroke);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  transition:transform .4s var(--ease);
+}
+.compat-item:active{transform:scale(.96)}
+.compat-item b{font-size:15px;font-weight:600}
+.compat-item span{font-size:12px;color:var(--text-3)}
+.compat-item .logo{width:40px;height:40px;border-radius:11px;corner-shape:var(--corner-sq);display:grid;place-items:center;font-weight:700;font-size:14px;color:#fff}
+.logo.magisk{background:linear-gradient(135deg,#34d399,#059669)}
+.logo.ksu{background:linear-gradient(135deg,#0a84ff,#0053d6)}
+.logo.apatch{background:linear-gradient(135deg,#f472b6,#db2777)}
+@media (max-width:520px){.compat-grid{gap:8px}.compat-item{padding:16px 6px}}
+
+/* ============ Rust 区 ============ */
+.rust-card{
+  position:relative;padding:clamp(28px,5vw,56px);border-radius:var(--radius-lg);corner-shape:var(--corner-sq);
+  background:
+    radial-gradient(120% 140% at 100% 0%,color-mix(in srgb,var(--orb-2) 55%,transparent),transparent 60%),
+    var(--card-bg);
+  border:1px solid var(--stroke);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);
+  box-shadow:var(--shadow);
+  display:grid;gap:26px;
+}
+@media (min-width:860px){.rust-card{grid-template-columns:1.1fr 1fr;align-items:center}}
+.rust-card h3{font-size:clamp(22px,4vw,30px);font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:14px}
+.rust-card p{font-size:15.5px;color:var(--text-2);margin-bottom:18px;max-width:30em}
+.rust-card .code{
+  font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.7;
+  background:var(--code-bg);border:1px solid var(--stroke);border-radius:16px;corner-shape:var(--corner-sq);
+  padding:20px 22px;overflow-x:auto;color:var(--text-2);white-space:pre;
+}
+.rust-card .code b{color:var(--accent);font-weight:600}
+.rust-chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:980px;font-size:13px;font-weight:500;
+  background:color-mix(in srgb,var(--accent) 11%,transparent);color:var(--accent)}
+.chip svg{width:14px;height:14px}
+
+/* ============ WebUI 展示 ============ */
+.webui{
+  position:relative;max-width:900px;margin:0 auto;border-radius:var(--radius-lg);corner-shape:var(--corner-sq);
+  border:1px solid var(--stroke);box-shadow:var(--shadow);overflow:hidden;
+  background:var(--bg-deep);
+}
+.webui-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--stroke);background:var(--glass)}
+.webui-bar .wdot{width:11px;height:11px;border-radius:50%}
+.webui-bar .wdot:nth-child(1){background:#ff5f57}.webui-bar .wdot:nth-child(2){background:#febc2e}.webui-bar .wdot:nth-child(3){background:#28c840}
+.webui-bar .wtabs{margin-left:auto;display:flex;gap:6px}
+.webui-bar .wtabs span{padding:5px 12px;border-radius:980px;font-size:12px;color:var(--text-2);background:var(--card-bg);border:1px solid var(--stroke)}
+.webui-bar .wtabs span.on{background:var(--accent);color:#fff;border-color:transparent}
+.webui-body{position:relative;padding:22px;background:
+  radial-gradient(100% 120% at 80% 0%,var(--orb-2),transparent 55%),
+  radial-gradient(90% 110% at 0% 100%,var(--orb-1),transparent 55%),
+  var(--bg)}
+.webui-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:640px){.webui-grid{grid-template-columns:repeat(3,1fr)}}
+.w-card{padding:16px;border-radius:18px;corner-shape:var(--corner-sq);background:var(--card-bg);border:1px solid var(--stroke);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.w-card .w-ic{width:34px;height:34px;border-radius:10px;corner-shape:var(--corner-sq);display:grid;place-items:center;margin-bottom:12px;color:#fff}
+.w-card b{font-size:13.5px;font-weight:600;display:block;margin-bottom:2px}
+.w-card span{font-size:11.5px;color:var(--text-3)}
+.w-card .bar{height:5px;border-radius:3px;background:color-mix(in srgb,var(--text) 10%,transparent);margin-top:12px;overflow:hidden}
+.w-card .bar i{display:block;height:100%;border-radius:3px;background:var(--accent);width:72%}
+.w-ic.c1{background:linear-gradient(135deg,#ff9f0a,#ff6b2c)}
+.w-ic.c2{background:linear-gradient(135deg,#0a84ff,#3a9bff)}
+.w-ic.c3{background:linear-gradient(135deg,#34c759,#22a447)}
+.w-ic.c4{background:linear-gradient(135deg,#bf5af2,#a03ce6)}
+.w-ic.c5{background:linear-gradient(135deg,#ff375f,#e62049)}
+.w-ic.c6{background:linear-gradient(135deg,#64d2ff,#0a84ff)}
+.w-shadow{position:absolute;inset:auto 8% -18px;height:34px;background:radial-gradient(60% 100% at 50% 0%,var(--orb-1),transparent 70%);filter:blur(14px)}
+
+/* ============ 安装步骤 ============ */
+.steps{display:grid;grid-template-columns:1fr;gap:14px;max-width:720px;margin:0 auto}
+@media (min-width:720px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{padding:24px;border-radius:var(--radius);corner-shape:var(--corner-sq);background:var(--card-bg);
+  border:1px solid var(--stroke);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow);
+  position:relative;transition:transform .4s var(--ease)}
+@media (hover:hover){.step:hover{transform:translateY(-3px)}}
+.step:active{transform:scale(.98)}
+.step .num{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:15px;
+  display:grid;place-items:center;margin-bottom:14px}
+.step h3{font-size:16.5px;font-weight:600;margin-bottom:6px}
+.step p{font-size:13.5px;color:var(--text-2)}
+
+/* ============ 下载区 ============ */
+.dl{
+  text-align:center;position:relative;border-radius:var(--radius-lg);corner-shape:var(--corner-sq);
+  padding:clamp(32px,6vw,56px);
+  background:
+    radial-gradient(120% 160% at 50% -20%,color-mix(in srgb,var(--orb-1) 60%,transparent),transparent 60%),
+    var(--card-bg);
+  border:1px solid var(--stroke);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:var(--shadow);
+}
+.dl h2{font-size:clamp(26px,5.5vw,40px);font-weight:700;letter-spacing:-.025em;margin-bottom:12px}
+.dl p{font-size:15px;color:var(--text-2);max-width:32em;margin:0 auto 30px}
+.dl-btns{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.dl-note{margin-top:18px;font-size:13px;color:var(--text-3)}
+.dl-note a{font-weight:500}
+@media (max-width:480px){.dl-btns .btn{width:100%;max-width:320px}}
+
+/* ============ FAQ ============ */
+.faq{max-width:760px;margin:0 auto;display:grid;gap:12px}
+.faq-item{border-radius:18px;corner-shape:var(--corner-sq);background:var(--card-bg);border:1px solid var(--stroke);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;transition:border-color .3s var(--ease)}
+.faq-item.open{border-color:color-mix(in srgb,var(--accent) 30%,var(--stroke))}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 20px;min-height:56px;text-align:left;
+  font-size:15px;font-weight:600;color:var(--text)}
+.faq-q .chev{width:18px;height:18px;flex-shrink:0;color:var(--text-3);transition:transform .4s var(--ease)}
+.faq-item.open .chev{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .5s var(--ease-out)}
+.faq-a p{padding:0 20px 20px;font-size:14px;color:var(--text-2);line-height:1.65}
+.faq-a a{font-weight:500}
+
+/* ============ 页脚 ============ */
+footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
+  backdrop-filter:saturate(160%) blur(20px);-webkit-backdrop-filter:saturate(160%) blur(20px);
+  background:color-mix(in srgb,var(--glass) 70%,transparent);transition:background .5s var(--ease),border-color .5s var(--ease)}
+.foot-in{display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center}
+.foot-brand{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.foot-brand img{width:24px;height:24px;border-radius:6px}
+.foot-links{display:flex;flex-wrap:wrap;gap:6px 22px;justify-content:center;font-size:13.5px}
+.foot-links a{color:var(--text-2);transition:color .3s var(--ease)}
+.foot-links a:hover{color:var(--text)}
+.foot-copy{font-size:12.5px;color:var(--text-3)}
+
+/* ============ 入场动画 ============ */
+.rv{opacity:0;transform:translateY(26px);filter:blur(10px)}
+.rv.in{animation:rvIn .9s var(--ease-out) both}
+@keyframes rvIn{to{opacity:1;transform:translateY(0);filter:blur(0)}}
+</style>
+</head>
+<body>
+
+<div class="bg-deco" aria-hidden="true">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="grid"></div>
+</div>
+
+<!-- 导航 -->
+<nav class="nav">
+  <div class="wrap nav-in">
+    <a class="nav-brand" href="#top">
+      <img src="libpool-logo.png" alt="LibPool 图标">
+      <b>LibPool <em>库池</em></b>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#features">特性</a>
+      <a href="#compat">兼容</a>
+      <a href="#rust">Rust</a>
+      <a href="#install">安装</a>
+      <a href="#download">下载</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-sw" id="themeSw" role="switch" aria-checked="false" aria-label="切换亮暗主题">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5 5l1.6 1.6M17.4 17.4 19 19M19 5l-1.6 1.6M6.6 17.4 5 19"/></svg>
+        </span>
+      </button>
+      <a class="btn btn-primary btn-sm" href="#download">下载</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="hero-badge rv"><span class="dot"></span>Magisk · KernelSU · APatch 通用</span>
+    <h1 class="rv">补齐 Android<br>缺失的<span class="hl">命令行</span></h1>
+    <p class="sub rv">LibPool（库池）——把 233 个常用扩展库与 18 个核心库，一键挂载到 <b>/system/bin</b>。自动跟随最新版、即时生效免重启、绝不覆盖系统原生文件。</p>
+    <div class="hero-cta rv">
+      <a class="btn btn-primary" href="#download" id="dlTop">免费下载</a>
+      <a class="btn btn-ghost" href="https://github.com/MineACEx/libpool" target="_blank" rel="noopener">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.73.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.15c0 .3.21.66.8.55A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+        查看 GitHub
+      </a>
+    </div>
+    <div class="hero-tags rv">
+      <span class="tag">233 扩展库</span>
+      <span class="tag">18 核心库</span>
+      <span class="tag">Rust 原生 · 零常驻</span>
+      <span class="tag">32 位兼容</span>
+      <span class="tag">iOS 18 毛玻璃 WebUI</span>
+      <span class="tag">云更新</span>
+    </div>
+  </div>
+</header>
+
+<!-- 特性 -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-eyebrow">Features</span>
+      <h2>要用的库，装了就有</h2>
+      <p>标准 magic mount 挂载到 /system，无需写系统分区，删除也不影响原生文件。</p>
+    </div>
+    <div class="bento">
+      <div class="cell rv" data-d="0">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div>
+        <div class="big">233</div>
+        <h3>个扩展库</h3>
+        <p>adb、fastboot、curl、git、htop、strace、gdb、tmux、ffmpeg、nodejs、python……10 大分类，常用的都在这。</p>
+      </div>
+      <div class="cell rv" data-d="1">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg></div>
+        <div class="big">18</div>
+        <h3>个核心库自备</h3>
+        <p>curl / git / tar / unzip / awk 等基础库，开机自动就位，开箱即用。</p>
+      </div>
+      <div class="cell rv" data-d="2">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 3v6h-6"/></svg></div>
+        <h3>自动跟随最新版</h3>
+        <p>库从 Termux 官方 / 镜像仓库解析最新版本安装，无需手动更新。</p>
+      </div>
+      <div class="cell rv" data-d="3">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></div>
+        <h3>挂载即时生效</h3>
+        <p>mount / unmount 走 overlayfs 热挂载，装完立刻可用，无需重启。</p>
+      </div>
+      <div class="cell rv" data-d="4">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 12l10 9 10-9-10-9Z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>绝不覆盖系统文件</h3>
+        <p>挂载前先检查 /system 同名 bin / lib，已存在则跳过，系统原生文件零风险。</p>
+      </div>
+      <div class="cell rv" data-d="5">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="5"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <h3>深度隐藏 root</h3>
+        <p>把银行 / MOMO / 淘宝等检测 root 的应用加进 KernelSU denylist，运行时彻底隐藏 su 痕迹，开关即生效。</p>
+      </div>
+      <div class="cell rv" data-d="6">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></div>
+        <h3>低功耗 · 零常驻</h3>
+        <p>管理工具为 Rust 静态二进制，仅安装 / 挂载时运行后退出，空闲占用趋近 0。</p>
+      </div>
+      <div class="cell rv" data-d="7">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H4z"/><path d="M4 16l5-6 4 4 3-3 4 5"/><path d="M9 8h.01M17 8h.01M13 8h.01"/></svg></div>
+        <h3>32 位也兼容</h3>
+        <p>armv7 设备自动使用 32 位原生二进制，其它架构回退 shell 脚本。</p>
+      </div>
+      <div class="cell rv" data-d="8">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3.5-7.1"/><path d="M21 3v6h-6"/></svg></div>
+        <h3>云更新</h3>
+        <p>对比本地与云端版本号，发现新版自动弹窗，下载链接一键跳转。</p>
+      </div>
+      <div class="cell tall rv" data-d="9">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M3 9h18M8 14h4"/></svg></div>
+        <h3>通透毛玻璃 WebUI</h3>
+        <p>内置 KsuWebUI：iOS 18 通透毛玻璃、G2 连续圆角、亮暗主题、自定义背景与壁纸模糊度。已挂载 / 扩展库 / 深度隐藏 / 设置，一站式管理。统一日志集中在 <b>log/</b>，问题好追溯。</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>触摸优先动效</span>
+          <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>手机 · 平板适配</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 兼容 -->
+<section id="compat" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-eyebrow">Compatibility</span>
+      <h2>三大框架，一套模块</h2>
+      <p>刷了什么不重要，装上就能用。</p>
+    </div>
+    <div class="compat-grid rv">
+      <div class="compat-item"><span class="logo magisk">M</span><b>Magisk</b><span>Magisk 26+</span></div>
+      <div class="compat-item"><span class="logo ksu">K</span><b>KernelSU</b><span>含 WebUI</span></div>
+      <div class="compat-item"><span class="logo apatch">A</span><b>APatch</b><span>APM 管理</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Rust -->
+<section id="rust" style="padding-top:0">
+  <div class="wrap">
+    <div class="rust-card rv">
+      <div>
+        <span class="sec-eyebrow">Powered by Rust</span>
+        <h3>为什么用 Rust，而不是 shell</h3>
+        <p>shell 每个操作都要 fork 解释器、字符串处理脆弱、JSON 解析易错。Rust 编译后是一个几 KB 级静态二进制：启动毫秒级、内存极小、永不因脚本错误半途崩溃。</p>
+        <div class="rust-chips">
+          <span class="chip">纯静态 · 零系统依赖</span>
+          <span class="chip">aarch64 + armv7 双架构</span>
+          <span class="chip">内存安全</span>
+        </div>
+      </div>
+      <div class="code"><b># libman</b> 承担全部核心逻辑
+<b>$</b> libman list      <span style="color:var(--text-3)"># 读 state.json</span>
+<b>$</b> libman install   <span style="color:var(--text-3)"># 解析 → 下载 → 解包 .deb</span>
+<b>$</b> libman mount     <span style="color:var(--text-3)"># bind 到 /system/bin</span>
+<b>$</b> libman toggle    <span style="color:var(--text-3)"># 一键开关</span>
+<b>$</b> libman hide apps <span style="color:var(--text-3)"># 深度隐藏 root</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- WebUI 展示 -->
+<section id="webui" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-eyebrow">WebUI</span>
+      <h2>好看，也好用</h2>
+      <p>iOS 18 通透毛玻璃，G2 连续圆角，触摸优先动效。手机平板都顺手。</p>
+    </div>
+    <div class="webui rv">
+      <div class="webui-bar">
+        <span class="wdot"></span><span class="wdot"></span><span class="wdot"></span>
+        <div class="wtabs"><span class="on">已挂载</span><span>扩展库</span><span>设置</span></div>
+      </div>
+      <div class="webui-body">
+        <div class="webui-grid">
+          <div class="w-card"><span class="w-ic c1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>adb</b><span>v35.0.2 · 已挂载</span><div class="bar"><i></i></div></div>
+          <div class="w-card"><span class="w-ic c2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>curl</b><span>v8.9.0 · 已挂载</span><div class="bar"><i></i></div></div>
+          <div class="w-card"><span class="w-ic c3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>git</b><span>v2.46.0 · 已挂载</span><div class="bar"><i></i></div></div>
+          <div class="w-card"><span class="w-ic c4"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>python</b><span>解析最新版…</span><div class="bar"><i style="width:46%"></i></div></div>
+          <div class="w-card"><span class="w-ic c5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>nodejs</b><span>未安装 · 一键下载</span></div>
+          <div class="w-card"><span class="w-ic c6"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span><b>htop</b><span>v3.3.0 · 已挂载</span><div class="bar"><i></i></div></div>
+        </div>
+        <div class="w-shadow" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 安装 -->
+<section id="install" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-eyebrow">Install</span>
+      <h2>三步，装好</h2>
+    </div>
+    <div class="steps">
+      <div class="step rv" data-d="0"><span class="num">1</span><h3>下载模块</h3><p>从 <a href="#download">Releases</a> 或镜像下载 <b>libpool-&lt;版本&gt;.zip</b>。</p></div>
+      <div class="step rv" data-d="1"><span class="num">2</span><h3>安装到管理器</h3><p>Magisk / KernelSU / APatch → 模块 → 从本地安装 → 选择该 zip。</p></div>
+      <div class="step rv" data-d="2"><span class="num">3</span><h3>开始使用</h3><p>重启后打开 KernelSU 模块 WebUI，核心库自动就位。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 下载 -->
+<section id="download" style="padding-top:0">
+  <div class="wrap">
+    <div class="dl rv">
+      <h2>现在开始，补齐命令行</h2>
+      <p>免费 · 开源（Apache-2.0）· 支持 Magisk / KernelSU / APatch 与 32 位设备。大陆用户建议走镜像下载。</p>
+      <div class="dl-btns">
+        <a class="btn btn-primary" href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          GitHub Releases
+        </a>
+        <a class="btn btn-ghost" href="https://openlist-1-7f9u.onrender.com/" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+          OpenList 镜像
+        </a>
+      </div>
+      <p class="dl-note">国内加速：下载页面内也提供 <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Release 镜像链接</a> · 想反馈 / 提需求 → <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">Issues</a></p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <span class="sec-eyebrow">FAQ</span>
+      <h2>常见问题</h2>
+    </div>
+    <div class="faq rv">
+      <div class="faq-item">
+        <button class="faq-q">会拖慢开机 / 卡开机吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>不会。customize.sh 数秒内返回，service.sh 挂载重放有 timeout 60 保护，核心库补装完全后台。任何环节失败只写日志，禁用模块即可完全恢复开机。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">耗电 / 占资源吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>不。模块没有守护进程、没有轮询、没有开机自启常驻，空闲时 CPU / 内存占用趋近 0。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">32 位手机能用吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>能。armv7 设备自动用 32 位原生二进制，其它架构回退 shell 兜底，无需手动配置。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">装了但命令找不到？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>某些库（如 python）会同时装依赖的动态库到 /system/lib。若仍提示找不到，在 WebUI 中重新开关一次该库即可。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">大陆下载很慢怎么办？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>在「设置 → 下载镜像」选择清华或北外镜像，速度更稳。或使用官网下载区的 OpenList 镜像。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">精简后系统会不会出问题？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>不会。模块只往 /system/bin 挂载你手动开启的库，不修改系统分区，删除库也不影响系统原有文件。</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">想反馈 Bug 或提需求？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p>请在 <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">GitHub Issues</a> 新建 Issue，尽量附上：机型 / 安卓版本 / 架构（uname -m）、模块版本号、复现步骤、WebUI 控制台日志。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-brand"><img src="libpool-logo.png" alt="">LibPool · 库池</div>
+    <div class="foot-links">
+      <a href="https://github.com/MineACEx/libpool" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/MineACEx/libpool/releases" target="_blank" rel="noopener">Releases</a>
+      <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">Issues</a>
+      <a href="https://github.com/MineACEx/libpool/blob/master/README.md" target="_blank" rel="noopener">README</a>
+      <a href="https://github.com/MineACEx/libpool/blob/master/LICENSE" target="_blank" rel="noopener">Apache-2.0</a>
+    </div>
+    <div class="foot-copy">© 2026 LibPool · MINO · Himer &nbsp;·&nbsp; Apache License 2.0</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var root=document.documentElement;
+
+  /* 主题切换（含 localStorage 持久化） */
+  var sw=document.getElementById('themeSw');
+  function cur(){return root.getAttribute('data-theme')||'light'}
+  function apply(t){root.setAttribute('data-theme',t);sw.setAttribute('aria-checked',t==='dark');
+    try{localStorage.setItem('lp-theme',t)}catch(e){}}
+  sw.addEventListener('click',function(){apply(cur()==='dark'?'light':'dark')});
+
+  /* 涟漪（触摸优先：pointerdown 触发） */
+  document.addEventListener('pointerdown',function(e){
+    var b=e.target.closest('.btn,.cell,.step,.compat-item,.faq-q');
+    if(!b)return;
+    var r=b.querySelector('.ripple');if(r)r.remove();
+    r=document.createElement('span');r.className='ripple';
+    var rect=b.getBoundingClientRect(),d=Math.max(rect.width,rect.height);
+    r.style.width=r.style.height=d+'px';
+    r.style.left=(e.clientX-rect.left-d/2)+'px';r.style.top=(e.clientY-rect.top-d/2)+'px';
+    b.appendChild(r);setTimeout(function(){r.remove()},650);
+  });
+
+  /* 导航：窄屏时收起链接（仅保留下载按钮与主题），宽度足够再展开 */
+  var links=document.getElementById('navLinks');
+  function fitNav(){
+    if(window.innerWidth<700){links.style.display='none';}
+    else{links.style.display='';}
+  }
+  fitNav();window.addEventListener('resize',fitNav);
+
+  /* FAQ 折叠（并行动画：同时平滑展开/收起） */
+  var items=document.querySelectorAll('.faq-item');
+  items.forEach(function(item){
+    var q=item.querySelector('.faq-q'),a=item.querySelector('.faq-a');
+    q.addEventListener('click',function(){
+      var isOpen=item.classList.contains('open');
+      items.forEach(function(o){o.classList.remove('open');o.querySelector('.faq-a').style.maxHeight='0px';});
+      if(!isOpen){
+        item.classList.add('open');
+        a.style.maxHeight=a.scrollHeight+'px';
+      }
+    });
+  });
+
+  /* 滚动入场（IntersectionObserver，打断友好：重复进入不重播） */
+  var rvs=document.querySelectorAll('.rv');
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(ents){
+      ents.forEach(function(en){
+        if(en.isIntersecting){
+          var el=en.target,delay=el.getAttribute('data-d')||0;
+          el.style.animationDelay=delay*70+'ms';
+          el.classList.add('in');
+          io.unobserve(el);
+        }
+      });
+    },{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+    rvs.forEach(function(el){io.observe(el)});
+  }else{
+    rvs.forEach(function(el){el.classList.add('in')});
+  }
+})();
+</script>
+</body>
+</html>
