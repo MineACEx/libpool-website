@@ -142,10 +142,24 @@ html:not([data-theme="dark"]) .theme-btn .tb-moon{display:none}
 .btn.lang-btn{width:40px;height:40px;min-width:0;padding:0;border-radius:50%}
 .lang-btn svg{width:18px;height:18px}
 
-/* 语言切换淡入过渡（克制：先淡出再更新淡入，不跳变） */
-[data-i18n],[data-i18n-html],[data-i18n-ph]{transition:opacity .3s var(--ease);will-change:opacity}
-[data-i18n].lang-out,[data-i18n-html].lang-out,[data-i18n-ph].lang-out{opacity:0;transition-duration:.13s;transition-timing-function:cubic-bezier(.55,0,.55,.2)}
-[data-i18n].lang-in,[data-i18n-html].lang-in,[data-i18n-ph].lang-in{opacity:1}
+/* 语言切换：全局高斯模糊遮罩（盖住页面 → 换文本 → 揭开），曲线先快后慢 */
+#langVeil{
+  position:fixed;inset:0;z-index:9999;pointer-events:none;
+  opacity:0;
+  background:color-mix(in srgb,var(--bg) 16%,transparent);
+  backdrop-filter:blur(0px) saturate(100%);
+  -webkit-backdrop-filter:blur(0px) saturate(100%);
+  transition:opacity .3s cubic-bezier(.4,0,.2,1),backdrop-filter .3s cubic-bezier(.4,0,.2,1);
+  -webkit-transition:opacity .3s cubic-bezier(.4,0,.2,1),-webkit-backdrop-filter .3s cubic-bezier(.4,0,.2,1);
+  will-change:opacity,backdrop-filter;
+}
+#langVeil.on{
+  opacity:1;
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+  pointer-events:auto;
+}
+@media (prefers-reduced-motion:reduce){#langVeil{transition:none}}
 
 /* 下载按钮 */
 .btn{
@@ -894,35 +908,35 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   <div class="wrap">
     <div class="sec-head rv">
       <span class="sec-eyebrow">FAQ</span>
-      <h2>常见问题</h2>
+      <h2 data-i18n="faq_title">常见问题</h2>
     </div>
     <div class="faq rv">
       <div class="faq-item">
-        <button class="faq-q">会拖慢开机 / 卡开机吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>不会。customize.sh 数秒内返回，service.sh 挂载重放有 timeout 60 保护，核心库补装完全后台。任何环节失败只写日志，禁用模块即可完全恢复开机。</p></div>
+        <button class="faq-q" data-i18n="faq1_q">会拖慢开机 / 卡开机吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq1_a">不会。customize.sh 数秒内返回，service.sh 挂载重放有 timeout 60 保护，核心库补装完全后台。任何环节失败只写日志，禁用模块即可完全恢复开机。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">耗电 / 占资源吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>不。模块没有守护进程、没有轮询、没有开机自启常驻，空闲时 CPU / 内存占用趋近 0。</p></div>
+        <button class="faq-q" data-i18n="faq2_q">耗电 / 占资源吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq2_a">不。模块没有守护进程、没有轮询、没有开机自启常驻，空闲时 CPU / 内存占用趋近 0。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">32 位手机能用吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>能。armv7 设备自动用 32 位原生二进制，其它架构回退 shell 兜底，无需手动配置。</p></div>
+        <button class="faq-q" data-i18n="faq3_q">32 位手机能用吗？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq3_a">能。armv7 设备自动用 32 位原生二进制，其它架构回退 shell 兜底，无需手动配置。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">装了但命令找不到？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>某些库（如 python）会同时装依赖的动态库到 /system/lib。若仍提示找不到，在 WebUI 中重新开关一次该库即可。</p></div>
+        <button class="faq-q" data-i18n="faq4_q">装了但命令找不到？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq4_a">某些库（如 python）会同时装依赖的动态库到 /system/lib。若仍提示找不到，在 WebUI 中重新开关一次该库即可。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">大陆下载很慢怎么办？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>在「设置 → 下载镜像」选择清华或北外镜像，速度更稳。或使用官网下载区的 OpenList 镜像。</p></div>
+        <button class="faq-q" data-i18n="faq5_q">大陆下载很慢怎么办？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq5_a">在「设置 → 下载镜像」选择清华或北外镜像，速度更稳。或使用官网下载区的 OpenList 镜像。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">精简后系统会不会出问题？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
-        <div class="faq-a"><p>不会。模块只往 /system/bin 挂载你手动开启的库，不修改系统分区，删除库也不影响系统原有文件。</p></div>
+        <button class="faq-q" data-i18n="faq6_q">精简后系统会不会出问题？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <div class="faq-a"><p data-i18n="faq6_a">不会。模块只往 /system/bin 挂载你手动开启的库，不修改系统分区，删除库也不影响系统原有文件。</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">想反馈 Bug 或提需求？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
+        <button class="faq-q" data-i18n="faq7_q">想反馈 Bug 或提需求？<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span></button>
         <div class="faq-a"><p data-i18n-html="faq7_a">请在 <a href="https://github.com/MineACEx/libpool/issues" target="_blank" rel="noopener">GitHub Issues</a> 新建 Issue，尽量附上：机型 / 安卓版本 / 架构（uname -m）、模块版本号、复现步骤、WebUI 控制台日志。</p></div>
       </div>
     </div>
@@ -943,6 +957,9 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
     <div class="foot-copy">© 2026 LibPool · MINO Studio &nbsp;·&nbsp; Apache License 2.0</div>
   </div>
 </footer>
+
+<!-- 语言切换全局模糊遮罩 -->
+<div id="langVeil" aria-hidden="true"></div>
 
 <script>
 (function(){
@@ -1089,18 +1106,14 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
   var lsw=document.getElementById('langSw'),langTimer=null;
   if(lsw){lsw.addEventListener('click',function(){
     var target=I18N.cur==='zh'?'en':'zh';
-    var els=document.querySelectorAll('[data-i18n],[data-i18n-html],[data-i18n-ph]');
-    /* 第一段：快速离场（130ms） */
-    els.forEach(function(el){el.classList.add('lang-out');el.classList.remove('lang-in')});
-    clearTimeout(langTimer);
+    var veil=document.getElementById('langVeil');
+    clearTimeout(langTimer);        /* 打断动画：连点时从当前模糊值继续过渡，不生硬 */
+    veil.classList.remove('on');    /* 同帧 remove + add，浏览器从当前状态平滑过渡到目标 */
+    veil.classList.add('on');       /* 高斯模糊盖住整页（先快后慢 0.3s） */
     langTimer=setTimeout(function(){
-      applyLang(target);
-      /* 第二段：柔和淡入（300ms 苹果曲线），rAF 保证 transition 生效 */
-      requestAnimationFrame(function(){
-        els.forEach(function(el){el.classList.remove('lang-out');el.classList.add('lang-in')});
-        setTimeout(function(){els.forEach(function(el){el.classList.remove('lang-in')})},330);
-      });
-    },130);
+      applyLang(target);            /* 模糊盖满后再换文本，跳变不可见 */
+      requestAnimationFrame(function(){veil.classList.remove('on')}); /* 揭开（同样先快后慢） */
+    },300);
   });}
   applyLang(I18N.cur);
 
