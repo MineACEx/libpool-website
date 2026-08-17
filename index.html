@@ -148,8 +148,6 @@ html:not([data-theme="dark"]) .theme-btn .tb-moon{display:none}
 /* 语言按钮（圆形，外观与主题按钮一致） */
 .btn.lang-btn{width:40px;height:40px;min-width:0;padding:0;border-radius:50%}
 .lang-btn svg{width:18px;height:18px}
-/* 圆形按钮：叠加 G2 连续圆角（squircle），让圆形更平滑圆润（不改变圆角大小；不支持时自动回退正圆） */
-.btn.theme-btn,.btn.lang-btn{corner-shape:var(--corner-sq)}
 
 /* 语言切换：全局高斯模糊遮罩（盖住页面 → 换文本 → 揭开），曲线先快后慢 */
 #langVeil{
@@ -323,7 +321,7 @@ html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
 .webui-bar .wtag{margin-left:auto;font-size:11px;font-weight:500;color:var(--text-3);border:1px solid var(--stroke);border-radius:980px;padding:3px 9px;background:var(--card-bg)}
 
 /* 演示应用外壳：居中手机栏 + 背景光斑 */
-.wui-app{position:relative;max-width:460px;margin:0 auto;padding:22px 16px 30px;
+.wui-app{position:relative;max-width:460px;margin:0 auto;padding:26px 18px 34px;
   --walpha:100%;--wblur:24px;--wshape:var(--corner-sq);
   background:
     radial-gradient(100% 120% at 85% 0%,var(--orb-2),transparent 55%),
@@ -361,8 +359,8 @@ html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
 @keyframes panelIn{from{transform:translateY(8px)}to{transform:translateY(0)}}
 
 /* 统计 */
-.wui-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.wui-stat .sc{padding:15px 8px;text-align:center;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+.wui-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.wui-stat .sc{padding:16px 8px;text-align:center;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
   border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow)}
 .wui-stat .sc b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;color:var(--accent)}
 .wui-stat .sc span{font-size:11.5px;color:var(--text-2)}
@@ -374,8 +372,8 @@ html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
 .wui-link:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
 
 /* 列表行（已挂载库 / 深度隐藏应用共用） */
-.wui-rows{display:flex;flex-direction:column;gap:10px}
-.wui-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-card);corner-shape:var(--wshape);
+.wui-rows{display:flex;flex-direction:column;gap:12px}
+.wui-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-card);corner-shape:var(--wshape);
   background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);border:1px solid var(--stroke);
   backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);
   transition:transform .32s cubic-bezier(.22,.85,.26,1),box-shadow .32s var(--ease),background .32s var(--ease)}
@@ -407,8 +405,8 @@ html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
 .wui-chip.on{background:var(--accent);color:#fff;border-color:transparent}
 
 /* 扩展库卡片 */
-.wui-store{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.wui-scard{padding:12px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+.wui-store{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.wui-scard{padding:14px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
   border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);
   transition:transform .16s var(--ease-out)}
 .wui-scard:active{transform:scale(.97)}
@@ -422,8 +420,8 @@ html[data-theme="dark"] .webui{--green:#30d158;--red:#ff453a}
 .wui-dl.done{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
 
 /* 设置：玻璃卡片 + 滑杆 + 分段 + 镜像 */
-.wui-gcard{padding:16px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
-  border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);margin-bottom:12px}
+.wui-gcard{padding:18px;border-radius:var(--r-card);corner-shape:var(--wshape);background:color-mix(in srgb,var(--card-bg) var(--walpha),transparent);
+  border:1px solid var(--stroke);backdrop-filter:blur(var(--wblur)) saturate(160%);-webkit-backdrop-filter:blur(var(--wblur)) saturate(160%);box-shadow:var(--shadow);margin-bottom:14px}
 .wui-srow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .wui-sname{font-size:14px;font-weight:600}
 .wui-sdesc{font-size:11.5px;color:var(--text-2);margin-top:2px}
@@ -1182,6 +1180,10 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
       document.querySelectorAll('.wui-panel').forEach(function(p){
         p.classList.toggle('on',p.id==='wui-panel-'+tab.dataset.tab);
       });
+      /* 切换面板后重新应用胶囊按钮 clip-path（面板 display 变化影响 offset 尺寸） */
+      setTimeout(function(){
+        wui.querySelectorAll('.wui-dl,.wui-btns button').forEach(function(el){smoothPill(el)});
+      },50);
     });
 
     /* 开关 */
@@ -1199,10 +1201,12 @@ footer{border-top:1px solid var(--stroke);padding:36px 0 44px;margin-top:8px;
       });
     });
 
-    /* 胶囊按钮圆角：corner-shape 只对矩形有效，胶囊端用超椭圆曲线替代纯半圆，
-       使切点处曲率连续、过渡更平滑；n≈2.5 时端部仅内收约 6%，观感仍是半圆胶囊。
+    /* 胶囊按钮圆角：corner-shape 只对矩形有效，胶囊端用超椭圆(Lamé 曲线)替代纯半圆。
+       纯半圆(border-radius:999px)在直线与圆弧连接处曲率从 0 突变到 1/r(G1 不连续)，
+       产生「生硬折角」；超椭圆 n=4(经典 squircle，ColorOS 流体云/灵动岛同款连续曲率)
+       让曲率从 0 平滑过渡到峰值再平滑归零(G2 连续)，端部更饱满圆润、过渡更柔和。
        用像素坐标的 clip-path:path() 裁剪，border-radius:999px 保留作不支持时的回退。 */
-    var PILL_N=2.5,PILL_STEPS=22;
+    var PILL_N=4,PILL_STEPS=40;
     function pillPath(w,h){
       var r=h/2,cx=w-r,cy=r,d='',i;
       d='M '+(r).toFixed(1)+' 0';
